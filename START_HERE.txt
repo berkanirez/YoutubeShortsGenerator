@@ -1,0 +1,19 @@
+CLAUDE CODE START PROMPT
+
+Bu repodaki `CLAUDE.md`, `docs/PRODUCT_SPEC.md` ve `docs/ROADMAP_30_DAYS.md` dosyalarını tamamen oku ve talimatları ana proje kuralları olarak kabul et.
+
+Bu projeyi benim için gün gün geliştireceksin.
+
+ÖNEMLİ:
+- Şu an yalnızca Day 1'i yap.
+- Day 1'e başlamadan önce Türkçe olarak bugün ne yapacağını, neden yaptığını, hangi teknoloji/özelliği kullanacağını ve bunun gerçek projelerde ne işe yaradığını bana açıkla.
+- Sonra gerekli dosyaları oluştur/değiştir, terminal komutlarını çalıştır ve testleri yap.
+- Bugünün hatalarını mümkün olduğunca aynı gün çöz.
+- Day 1 sonunda yaptıklarını ve öğrendiğim temel noktaları açıkla.
+- `docs/DAY_STATE.md` dosyasını güncelle.
+- Ben açıkça "devam/onay/sonraki güne geç" demeden Day 2'ye ASLA geçme.
+- Ücretli API veya servis ekleme. V1 çalışma maliyeti 0 olmalı.
+- Mevcut klasörde bir şey varsa silmeden veya üzerine düşünmeden önce incele.
+- Gereksiz overengineering yapma; çalışan, temiz, gerçek bir V1 inşa et.
+
+Şimdi Day 1'e başla.

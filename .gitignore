@@ -1,0 +1,40 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Node / Remotion (renderer, added later)
+node_modules/
+renderer/dist/
+renderer/out/
+
+# Python (local TTS tooling, added later)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local generated content (never commit rendered/generated media)
+output/
+samples/*.mp4
+samples/*.wav
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local secrets/config overrides
+appsettings.*.local.json
+.env
+.env.*
+
+# Editor / OS
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

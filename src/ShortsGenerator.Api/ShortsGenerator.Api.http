@@ -1,0 +1,6 @@
+@ShortsGenerator.Api_HostAddress = http://localhost:5007
+
+GET {{ShortsGenerator.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
