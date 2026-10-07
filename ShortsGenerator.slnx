@@ -1,8 +1,14 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/ShortsGenerator.Api/ShortsGenerator.Api.csproj" />
+    <Project Path="src/ShortsGenerator.Application/ShortsGenerator.Application.csproj" />
+    <Project Path="src/ShortsGenerator.Domain/ShortsGenerator.Domain.csproj" />
+    <Project Path="src/ShortsGenerator.Infrastructure/ShortsGenerator.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/ShortsGenerator.Api.Tests/ShortsGenerator.Api.Tests.csproj" />
+    <Project Path="tests/ShortsGenerator.Application.Tests/ShortsGenerator.Application.Tests.csproj" />
+    <Project Path="tests/ShortsGenerator.Domain.Tests/ShortsGenerator.Domain.Tests.csproj" />
+    <Project Path="tests/ShortsGenerator.Infrastructure.Tests/ShortsGenerator.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>

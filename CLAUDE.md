@@ -46,6 +46,30 @@ You may:
 
 Fix problems belonging to the current day before stopping.
 
+Before reporting, write `docs/daily-code-notes/day-NN.md` (two-digit, zero-padded
+day number, e.g. `day-01.md`, `day-02.md`), in the same format used in the
+`DotNetCareerPath` repo's `docs/daily-code-notes/` folder:
+- Title `# Day N — Kod Notları`, then one line naming the day's topic, then a
+  line explaining the doc walks every code piece added/changed today **in the
+  order it was written/used**.
+- A `---`-separated, numbered section per file or command, each with: the
+  code/command itself in a fenced block, a **Neden:** paragraph (why — the
+  real problem it solves), and a **Nasıl çalışıyor:** paragraph/bullet list
+  (how it works, syntax explained, broken down snippet-by-snippet for longer
+  files).
+- When a bug is found and fixed the same day, give it its own numbered
+  section: the error message, the fix, **Neden:** (root cause), **Nasıl
+  çalışıyor:** (why the fix works).
+- When a file from an earlier day is revisited/changed, show the diff and
+  explain why today's change was necessary.
+- End with `## Doğrulanan davranış`: real `dotnet build`/`dotnet test`
+  output and/or real manual verification output (curl, console), plus a
+  short paragraph on what it proves.
+
+This file is part of the day's deliverable, not optional — it is how the
+user builds a lasting, re-readable record of what each day's code actually
+does and why, beyond the ephemeral chat.
+
 ### AFTER coding
 Report in Turkish:
 - Tam olarak ne yaptın?
@@ -54,6 +78,7 @@ Report in Turkish:
 - Test sonuçları.
 - Kullanıcının bugün öğrenmesi gereken 3–6 temel nokta.
 - Varsa teknik borç veya sonraki güne bırakılan bilinçli işler.
+- `docs/daily-code-notes/day-NN.md` oluşturuldu/güncellendi bilgisini belirt.
 
 Then STOP.
 

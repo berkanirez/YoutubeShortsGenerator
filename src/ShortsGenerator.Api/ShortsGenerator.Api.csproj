@@ -8,6 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShortsGenerator.Application\ShortsGenerator.Application.csproj" />
+    <ProjectReference Include="..\ShortsGenerator.Infrastructure\ShortsGenerator.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
