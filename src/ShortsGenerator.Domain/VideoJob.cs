@@ -2,6 +2,10 @@ namespace ShortsGenerator.Domain;
 
 public sealed class VideoJob
 {
+    // The topic goes straight into the LLM prompt; SQLite doesn't enforce HasMaxLength, so
+    // the limit lives here. 200 is generous for a Shorts title (the dashboard's maxlength).
+    public const int MaxTopicLength = 200;
+
     public Guid Id { get; private set; }
     public string Topic { get; private set; } = string.Empty;
     public string? SourceScript { get; private set; }
@@ -13,6 +17,17 @@ public sealed class VideoJob
     public string? OutputDirectory { get; private set; }
     public string? FinalVideoPath { get; private set; }
 
+    // Day 26: what the job was queued for and hasn't finished yet. The queue itself lives in
+    // memory; this is the durable half of it, so work interrupted by a stop/crash of the API
+    // can be picked up again on the next start. Null = nothing pending.
+    public VideoJobWorkKind? PendingWork { get; private set; }
+
+    // How many times in a row pending work was found interrupted at startup. A job that
+    // keeps taking the process down with it must not be resumed forever (poison message).
+    public int InterruptionCount { get; private set; }
+
+    public const int MaxInterruptions = 2;
+
     // Required by EF Core to materialize entities from the database.
     private VideoJob()
     {
@@ -23,6 +38,11 @@ public sealed class VideoJob
         if (string.IsNullOrWhiteSpace(topic))
         {
             throw new ArgumentException("Topic is required.", nameof(topic));
+        }
+
+        if (topic.Trim().Length > MaxTopicLength)
+        {
+            throw new ArgumentException($"Topic must be at most {MaxTopicLength} characters.", nameof(topic));
         }
 
         return new VideoJob
@@ -60,8 +80,10 @@ public sealed class VideoJob
         UpdatedAt = now;
     }
 
+    // From Completed too (Day 23): editing a scene's narration text means the voice-over has to
+    // be regenerated, which puts a finished job back into Narrating (then Rendering, Completed).
     public void MarkNarrating(DateTimeOffset now) =>
-        TransitionTo(VideoJobStatus.Narrating, now, VideoJobStatus.Planning);
+        TransitionTo(VideoJobStatus.Narrating, now, VideoJobStatus.Planning, VideoJobStatus.Completed);
 
     public void SetOutputDirectory(string outputDirectory, DateTimeOffset now)
     {
@@ -74,8 +96,11 @@ public sealed class VideoJob
         UpdatedAt = now;
     }
 
+    // From Completed too: re-rendering a finished job (e.g. after a renderer/visual change)
+    // shouldn't require regenerating its script and narration. The previous FinalVideoPath
+    // stays set until the new render completes.
     public void MarkRendering(DateTimeOffset now) =>
-        TransitionTo(VideoJobStatus.Rendering, now, VideoJobStatus.Narrating);
+        TransitionTo(VideoJobStatus.Rendering, now, VideoJobStatus.Narrating, VideoJobStatus.Completed);
 
     public void MarkCompleted(string finalVideoPath, DateTimeOffset now)
     {
@@ -103,6 +128,73 @@ public sealed class VideoJob
             VideoJobStatus.Narrating,
             VideoJobStatus.Rendering);
         ErrorMessage = errorMessage;
+    }
+
+    public void MarkQueued(VideoJobWorkKind kind, DateTimeOffset now)
+    {
+        PendingWork = kind;
+        UpdatedAt = now;
+    }
+
+    // The work item ran to an end - success or a recorded failure. Not called when the API
+    // shuts down mid-work: then PendingWork stays set and the work resumes on the next start.
+    public void MarkWorkFinished(DateTimeOffset now)
+    {
+        PendingWork = null;
+        InterruptionCount = 0;
+        UpdatedAt = now;
+    }
+
+    /// <summary>
+    /// Called at startup for a job whose work was interrupted. Returns false (and fails the
+    /// job) once it has been interrupted more than <see cref="MaxInterruptions"/> times.
+    /// </summary>
+    public bool RecoverAfterInterruption(DateTimeOffset now)
+    {
+        if (PendingWork is null)
+        {
+            throw new InvalidOperationException($"Video job {Id} has no pending work to recover.");
+        }
+
+        InterruptionCount++;
+        if (InterruptionCount > MaxInterruptions)
+        {
+            var reason = $"Stopped after being interrupted {InterruptionCount} times in a row while '{Status}' " +
+                         "(the API stopped or crashed each time). See job.log, then use Retry.";
+            PendingWork = null;
+            if (Status is not (VideoJobStatus.Completed or VideoJobStatus.Failed))
+            {
+                MarkFailed(reason, now);
+            }
+
+            return false;
+        }
+
+        // A render that was cut off produced nothing (it writes final.rendering.mp4 and only
+        // renames on success, Day 13); its inputs are intact, so it starts over from Narrating.
+        if (Status is VideoJobStatus.Rendering)
+        {
+            Status = VideoJobStatus.Narrating;
+        }
+
+        UpdatedAt = now;
+        return true;
+    }
+
+    /// <summary>
+    /// Puts a failed job back at the last stage whose results are still valid, chosen by the
+    /// caller from what exists on disk. Its error is cleared.
+    /// </summary>
+    public void RetryFrom(VideoJobStatus resumeAt, DateTimeOffset now)
+    {
+        if (resumeAt is not (VideoJobStatus.Created or VideoJobStatus.Planning or VideoJobStatus.Narrating))
+        {
+            throw new ArgumentOutOfRangeException(nameof(resumeAt), resumeAt, "A retry resumes at Created, Planning or Narrating.");
+        }
+
+        TransitionTo(resumeAt, now, VideoJobStatus.Failed);
+        ErrorMessage = null;
+        InterruptionCount = 0;
     }
 
     private void TransitionTo(VideoJobStatus target, DateTimeOffset now, params VideoJobStatus[] allowedFrom)

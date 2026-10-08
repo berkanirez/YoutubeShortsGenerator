@@ -12,14 +12,24 @@ public static class PlanJsonExtractor
     private static readonly Regex StringNullLiteralPattern =
         new("""(?<=:\s*)"null"(?=\s*[,}\]])""", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    // "animation" is a required (non-nullable) field - unlike sfx/background/emphasis, a
+    // real JSON null there can never deserialize. The prompt asks the model to use "fade"
+    // when nothing else fits, but small local models don't always comply; defaulting a
+    // genuine null to "fade" here means one fewer retry for a purely cosmetic omission.
+    private static readonly Regex NullAnimationPattern =
+        new("""("animation"\s*:\s*)null""", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     public static string Extract(string raw)
     {
         var text = StripCodeFence(raw.Trim());
         text = ExtractJsonObject(text);
-        return NormalizeNullStringLiterals(text);
+        text = NormalizeNullStringLiterals(text);
+        return DefaultMissingAnimation(text);
     }
 
     private static string NormalizeNullStringLiterals(string text) => StringNullLiteralPattern.Replace(text, "null");
+
+    private static string DefaultMissingAnimation(string text) => NullAnimationPattern.Replace(text, "$1\"fade\"");
 
     private static string StripCodeFence(string text)
     {

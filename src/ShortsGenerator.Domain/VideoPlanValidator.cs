@@ -11,14 +11,17 @@ public static class VideoPlanValidator
     public const int MinTargetDurationSeconds = 20;
     public const int MaxTargetDurationSeconds = 50;
 
-    // How far the sum of scene durations may drift from TargetDurationSeconds.
-    private const int DurationToleranceSeconds = 5;
-
-    // Asset IDs don't exist yet (the manifest arrives Day 6) - this only rejects
-    // obviously unsafe/malformed values (e.g. path separators) this early.
+    // Rejects obviously unsafe/malformed asset ids (e.g. path separators) before even
+    // checking whether the id is a real, known asset.
     private static readonly Regex AssetIdPattern = new(@"^[a-z0-9][a-z0-9_-]*$", RegexOptions.Compiled);
 
-    public static ValidationResult Validate(VideoPlan plan, string expectedNarrationText)
+    /// <param name="checkDurations">
+    /// False for plans already timed from real narration audio (Day 12): their scene lengths are
+    /// measured, not guessed, so the duration limits (meant to catch implausible LLM guesses)
+    /// don't apply - a short real voice-over is not an invalid plan.
+    /// </param>
+    public static ValidationResult Validate(
+        VideoPlan plan, string expectedNarrationText, IReadOnlySet<string> knownAssetIds, bool checkDurations = true)
     {
         var reasons = new List<string>();
 
@@ -32,21 +35,17 @@ public static class VideoPlanValidator
             reasons.Add("Hook is empty.");
         }
 
-        if (plan.TargetDurationSeconds < MinTargetDurationSeconds || plan.TargetDurationSeconds > MaxTargetDurationSeconds)
-        {
-            reasons.Add(
-                $"TargetDurationSeconds ({plan.TargetDurationSeconds}) must be between " +
-                $"{MinTargetDurationSeconds} and {MaxTargetDurationSeconds}.");
-        }
-
         if (plan.Scenes.Count < MinScenes || plan.Scenes.Count > MaxScenes)
         {
             reasons.Add($"Plan has {plan.Scenes.Count} scenes; must have between {MinScenes} and {MaxScenes}.");
         }
 
         ValidateSceneOrdering(plan.Scenes, reasons);
-        ValidateIndividualScenes(plan.Scenes, reasons);
-        ValidateTotalDuration(plan, reasons);
+        ValidateIndividualScenes(plan.Scenes, knownAssetIds, checkDurations, reasons);
+        if (checkDurations)
+        {
+            ValidateTotalDuration(plan, reasons);
+        }
         ValidateNarrationReconstruction(plan.Scenes, expectedNarrationText, reasons);
 
         return new ValidationResult(reasons.Count == 0, reasons);
@@ -85,7 +84,8 @@ public static class VideoPlanValidator
         }
     }
 
-    private static void ValidateIndividualScenes(IReadOnlyList<Scene> scenes, List<string> reasons)
+    private static void ValidateIndividualScenes(
+        IReadOnlyList<Scene> scenes, IReadOnlySet<string> knownAssetIds, bool checkDurations, List<string> reasons)
     {
         foreach (var scene in scenes)
         {
@@ -102,7 +102,8 @@ public static class VideoPlanValidator
                 reasons.Add($"Scene '{scene.Id}' (order {scene.Order}) has empty narration.");
             }
 
-            if (scene.DurationSeconds < MinSceneDurationSeconds || scene.DurationSeconds > MaxSceneDurationSeconds)
+            if (checkDurations &&
+                (scene.DurationSeconds < MinSceneDurationSeconds || scene.DurationSeconds > MaxSceneDurationSeconds))
             {
                 reasons.Add(
                     $"Scene '{scene.Id}' duration ({scene.DurationSeconds}s) must be between " +
@@ -117,18 +118,28 @@ public static class VideoPlanValidator
                         $"Scene '{scene.Id}' has an invalid asset id '{assetId}' " +
                         "(use lowercase letters, digits, '-', '_' only).");
                 }
+                else if (!knownAssetIds.Contains(assetId))
+                {
+                    reasons.Add(
+                        $"Scene '{scene.Id}' references unknown asset id '{assetId}'. " +
+                        "Only asset ids from the provided catalog may be used.");
+                }
             }
         }
     }
 
+    // TargetDurationSeconds is derived by the caller from these same scenes (see
+    // ScenePlanningService), so the only thing worth checking here is whether the actual
+    // runtime lands in the product's allowed video length - not whether two numbers the
+    // model might separately report happen to agree with each other.
     private static void ValidateTotalDuration(VideoPlan plan, List<string> reasons)
     {
         var totalDuration = plan.Scenes.Sum(s => s.DurationSeconds);
-        if (Math.Abs(totalDuration - plan.TargetDurationSeconds) > DurationToleranceSeconds)
+        if (totalDuration < MinTargetDurationSeconds || totalDuration > MaxTargetDurationSeconds)
         {
             reasons.Add(
-                $"Scene durations add up to {totalDuration}s, which is too far from " +
-                $"TargetDurationSeconds ({plan.TargetDurationSeconds}s).");
+                $"Scene durations add up to {totalDuration}s; the whole video must be between " +
+                $"{MinTargetDurationSeconds} and {MaxTargetDurationSeconds} seconds.");
         }
     }
 

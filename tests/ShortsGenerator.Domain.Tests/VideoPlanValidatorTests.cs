@@ -8,12 +8,14 @@ public class VideoPlanValidatorTests
         "every single rep. Add weight once you can do ten clean reps. Track your progress " +
         "every single week.";
 
+    private static readonly HashSet<string> NoAssets = [];
+
     [Fact]
     public void Validate_WellFormedSixScenePlan_IsValid()
     {
         var plan = BuildValidPlan();
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.True(result.IsValid);
         Assert.Empty(result.Reasons);
@@ -24,7 +26,7 @@ public class VideoPlanValidatorTests
     {
         var plan = BuildValidPlan(sceneCount: 3);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("must have between", StringComparison.OrdinalIgnoreCase));
@@ -37,7 +39,7 @@ public class VideoPlanValidatorTests
         scenes[0] = scenes[0] with { Type = SceneType.ExerciseDemo };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("must be of type 'Hook'", StringComparison.OrdinalIgnoreCase));
@@ -50,7 +52,7 @@ public class VideoPlanValidatorTests
         scenes[^1] = scenes[^1] with { Type = SceneType.Recovery };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("must be of type 'Outro'", StringComparison.OrdinalIgnoreCase));
@@ -63,7 +65,7 @@ public class VideoPlanValidatorTests
         scenes[1] = scenes[1] with { Order = scenes[0].Order };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("order", StringComparison.OrdinalIgnoreCase));
@@ -76,7 +78,7 @@ public class VideoPlanValidatorTests
         scenes[2] = scenes[2] with { DurationSeconds = 99 };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("duration", StringComparison.OrdinalIgnoreCase));
@@ -89,10 +91,36 @@ public class VideoPlanValidatorTests
         scenes[0] = scenes[0] with { AssetIds = ["../etc/passwd"] };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("invalid asset id", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Validate_WellFormedButUnknownAssetId_IsInvalid()
+    {
+        var scenes = BuildScenes(6).ToList();
+        scenes[0] = scenes[0] with { AssetIds = ["mascot-idle"] };
+        var plan = BuildValidPlan(scenes: scenes);
+
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Reasons, r => r.Contains("unknown asset id", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void Validate_AssetIdPresentInCatalog_IsValid()
+    {
+        var scenes = BuildScenes(6).ToList();
+        scenes[0] = scenes[0] with { AssetIds = ["mascot-idle"] };
+        var plan = BuildValidPlan(scenes: scenes);
+
+        var result = VideoPlanValidator.Validate(plan, Narration, new HashSet<string> { "mascot-idle" });
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Reasons);
     }
 
     [Fact]
@@ -102,7 +130,7 @@ public class VideoPlanValidatorTests
         scenes[0] = scenes[0] with { Narration = "This paraphrases the opening instead of copying it." };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("does not exactly reproduce", StringComparison.OrdinalIgnoreCase));
@@ -115,7 +143,7 @@ public class VideoPlanValidatorTests
         scenes[2] = scenes[2] with { Narration = "   " };
         var plan = BuildValidPlan(scenes: scenes);
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("empty narration", StringComparison.OrdinalIgnoreCase));
@@ -135,21 +163,24 @@ public class VideoPlanValidatorTests
             NarrationText = string.Join(' ', scenes.Take(scenes.Count - 1).Select(s => s.Narration)),
         };
 
-        var result = VideoPlanValidator.Validate(plan, plan.NarrationText);
+        var result = VideoPlanValidator.Validate(plan, plan.NarrationText, NoAssets);
 
         Assert.True(result.IsValid);
         Assert.Empty(result.Reasons);
     }
 
     [Fact]
-    public void Validate_TotalDurationFarFromTarget_IsInvalid()
+    public void Validate_TotalSceneDurationOutsideAllowedVideoLength_IsInvalid()
     {
-        var plan = BuildValidPlan() with { TargetDurationSeconds = 48 };
+        // Each scene duration (12s) is individually within MaxSceneDurationSeconds, but six
+        // of them push the whole video past MaxTargetDurationSeconds (50s).
+        var scenes = BuildScenes(6).Select(s => s with { DurationSeconds = 12 }).ToList();
+        var plan = BuildValidPlan(scenes: scenes) with { TargetDurationSeconds = 72 };
 
-        var result = VideoPlanValidator.Validate(plan, Narration);
+        var result = VideoPlanValidator.Validate(plan, Narration, NoAssets);
 
         Assert.False(result.IsValid);
-        Assert.Contains(result.Reasons, r => r.Contains("too far from", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(result.Reasons, r => r.Contains("whole video must be between", StringComparison.OrdinalIgnoreCase));
     }
 
     private static VideoPlan BuildValidPlan(int sceneCount = 6, List<Scene>? scenes = null)

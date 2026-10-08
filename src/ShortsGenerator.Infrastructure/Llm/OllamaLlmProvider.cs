@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using ShortsGenerator.Domain;
 
@@ -12,47 +14,138 @@ public sealed class OllamaLlmProvider : ILlmProvider
 
     private readonly HttpClient _httpClient;
     private readonly OllamaOptions _options;
+    private readonly ILogger<OllamaLlmProvider> _logger;
 
-    public OllamaLlmProvider(HttpClient httpClient, IOptions<OllamaOptions> options)
+    public OllamaLlmProvider(HttpClient httpClient, IOptions<OllamaOptions> options, ILogger<OllamaLlmProvider>? logger = null)
     {
         _httpClient = httpClient;
         _options = options.Value;
+        _logger = logger ?? NullLogger<OllamaLlmProvider>.Instance;
     }
 
-    public async Task<string> GenerateAsync(string prompt, CancellationToken cancellationToken)
+    public Task<string> GenerateAsync(string prompt, CancellationToken cancellationToken) =>
+        SendAsync(prompt, format: null, cancellationToken);
+
+    // Ollama "structured outputs" (format = a JSON Schema): the schema is compiled into a
+    // grammar that restricts which tokens the model may produce, so e.g. an array declared
+    // with minItems = maxItems = 7 can only come out with 7 entries. Added on Day 15 after
+    // the first real run spent 4 of 5 attempts on wrong scene counts and broken JSON.
+    public Task<string> GenerateJsonAsync(string prompt, string jsonSchema, CancellationToken cancellationToken)
+    {
+        using var schema = JsonDocument.Parse(jsonSchema);
+        return SendAsync(prompt, schema.RootElement.Clone(), cancellationToken);
+    }
+
+    private async Task<string> SendAsync(string prompt, JsonElement? format, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(prompt))
         {
             throw new ArgumentException("Prompt is required.", nameof(prompt));
         }
 
-        var request = new OllamaGenerateRequest(_options.Model, prompt, Stream: false);
+        var request = new OllamaGenerateRequest(
+            _options.Model, prompt, Stream: false, new OllamaGenerateOptions(_options.MaxOutputTokens), format);
 
-        HttpResponseMessage response;
+        for (var attempt = 1; ; attempt++)
+        {
+            var isLastAttempt = attempt >= _options.MaxAttempts;
+            HttpResponseMessage response;
+            try
+            {
+                response = await _httpClient.PostAsJsonAsync("/api/generate", request, JsonOptions, cancellationToken);
+            }
+            catch (HttpRequestException ex) when (!isLastAttempt)
+            {
+                await WaitBeforeRetryAsync(attempt, ex.Message, cancellationToken);
+                continue;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new LlmUnavailableException(
+                    $"Could not reach Ollama at {_httpClient.BaseAddress}. Is it running? " +
+                    "Start it from the Ollama app, or run 'ollama serve'.",
+                    ex);
+            }
+            catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Nobody cancelled: this is HttpClient.Timeout. Without this it would look like a
+                // shutdown to the pipeline and surface as an "unexpected error". Not retried: a
+                // second 2-minute wait would most likely end the same way.
+                throw new LlmUnavailableException(
+                    $"Ollama did not answer within {_httpClient.Timeout.TotalSeconds:0} seconds. The model may still be " +
+                    "loading or the machine is busy; try again, or use a smaller model.",
+                    ex);
+            }
+
+            if (response.StatusCode == HttpStatusCode.ServiceUnavailable && !isLastAttempt)
+            {
+                response.Dispose();
+                await WaitBeforeRetryAsync(attempt, "HTTP 503", cancellationToken);
+                continue;
+            }
+
+            return await ReadResponseAsync(response, cancellationToken);
+        }
+    }
+
+    private async Task WaitBeforeRetryAsync(int attempt, string reason, CancellationToken cancellationToken)
+    {
+        _logger.LogWarning(
+            "Ollama call failed ({Reason}); trying again in {Delay}s (attempt {Next} of {Max})",
+            reason, _options.RetryDelaySeconds, attempt + 1, _options.MaxAttempts);
+        await Task.Delay(TimeSpan.FromSeconds(_options.RetryDelaySeconds), cancellationToken);
+    }
+
+    private async Task<string> ReadResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        using (response)
+        {
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new LlmUnavailableException(
+                    $"Ollama model '{_options.Model}' is not available. Pull it first with " +
+                    $"'ollama pull {_options.Model}'. Ollama said: {errorBody}");
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Ollama explains itself in {"error": "..."} (e.g. not enough memory for the model).
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                throw new LlmUnavailableException(
+                    $"Ollama returned HTTP {(int)response.StatusCode}: {ErrorText(errorBody)}");
+            }
+
+            try
+            {
+                var payload = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(JsonOptions, cancellationToken);
+                return payload?.Response ?? string.Empty;
+            }
+            catch (Exception ex) when (ex is JsonException or NotSupportedException)
+            {
+                // NotSupportedException: a non-JSON content type (e.g. an HTML page from a proxy).
+                throw new LlmUnavailableException(
+                    $"Ollama at {_httpClient.BaseAddress} sent an unexpected response that isn't its JSON format.", ex);
+            }
+        }
+    }
+
+    private static string ErrorText(string body)
+    {
         try
         {
-            response = await _httpClient.PostAsJsonAsync("/api/generate", request, JsonOptions, cancellationToken);
+            using var json = JsonDocument.Parse(body);
+            if (json.RootElement.ValueKind == JsonValueKind.Object &&
+                json.RootElement.TryGetProperty("error", out var error) && error.ValueKind == JsonValueKind.String)
+            {
+                return error.GetString()!;
+            }
         }
-        catch (HttpRequestException ex)
+        catch (JsonException)
         {
-            throw new LlmUnavailableException(
-                $"Could not reach Ollama at {_httpClient.BaseAddress}. Is it running? " +
-                "Start it from the Ollama app, or run 'ollama serve'.",
-                ex);
         }
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new LlmUnavailableException(
-                $"Ollama model '{_options.Model}' is not available. Pull it first with " +
-                $"'ollama pull {_options.Model}'. Ollama said: {errorBody}");
-        }
-
-        response.EnsureSuccessStatusCode();
-
-        var payload = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(JsonOptions, cancellationToken);
-        return payload?.Response ?? string.Empty;
+        return body.Length > 300 ? body[..300] : body;
     }
 
     public async Task<LlmAvailability> CheckAvailabilityAsync(CancellationToken cancellationToken)
@@ -81,7 +174,18 @@ public sealed class OllamaLlmProvider : ILlmProvider
     }
 }
 
-internal sealed record OllamaGenerateRequest(string Model, string Prompt, bool Stream);
+internal sealed record OllamaGenerateRequest(
+    string Model,
+    string Prompt,
+    bool Stream,
+    OllamaGenerateOptions Options,
+    // Omitted from the request entirely when null (plain-text generation).
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    JsonElement? Format = null);
+
+// Mirrors the subset of Ollama's "options" object we care about. num_predict caps how many
+// tokens the model may generate; without it Ollama's own default can truncate a long JSON plan.
+internal sealed record OllamaGenerateOptions(int NumPredict);
 
 internal sealed record OllamaGenerateResponse(string Response);
 

@@ -12,6 +12,13 @@ internal sealed class FakeLlmProvider : ILlmProvider
     }
 
     public List<string> ReceivedPrompts { get; } = [];
+    public List<string> ReceivedSchemas { get; } = [];
+
+    public Task<string> GenerateJsonAsync(string prompt, string jsonSchema, CancellationToken cancellationToken)
+    {
+        ReceivedSchemas.Add(jsonSchema);
+        return GenerateAsync(prompt, cancellationToken);
+    }
 
     public Task<string> GenerateAsync(string prompt, CancellationToken cancellationToken)
     {

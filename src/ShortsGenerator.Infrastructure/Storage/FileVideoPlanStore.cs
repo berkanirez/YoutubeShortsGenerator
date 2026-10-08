@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using ShortsGenerator.Domain;
 
 namespace ShortsGenerator.Infrastructure.Storage;
@@ -13,39 +12,65 @@ public sealed class FileVideoPlanStore : IVideoPlanStore
         WriteIndented = true,
     };
 
-    private readonly string _rootDirectory;
+    private readonly IJobOutputLocator _locator;
 
-    public FileVideoPlanStore(IOptions<OutputStorageOptions> options)
+    public FileVideoPlanStore(IJobOutputLocator locator)
     {
-        _rootDirectory = options.Value.RootDirectory;
+        _locator = locator;
     }
 
     public async Task<string> SaveAsync(Guid jobId, VideoPlan plan, CancellationToken cancellationToken)
     {
-        var jobDirectory = GetJobDirectory(jobId);
+        var jobDirectory = _locator.GetJobDirectory(jobId);
         Directory.CreateDirectory(jobDirectory);
 
+        // Written next to the real file, then moved over it: File.Create would truncate the
+        // existing plan first, so a crash (or a cancelled edit) mid-write would destroy it, and
+        // the dashboard polling GET /plan could read half a file.
         var filePath = Path.Combine(jobDirectory, FileName);
-        await using var stream = File.Create(filePath);
-        await JsonSerializer.SerializeAsync(stream, plan, JsonOptions, cancellationToken);
+        var tempPath = filePath + ".tmp";
+        try
+        {
+            await using (var stream = File.Create(tempPath))
+            {
+                await JsonSerializer.SerializeAsync(stream, plan, JsonOptions, cancellationToken);
+            }
+
+            File.Move(tempPath, filePath, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
 
         return jobDirectory;
     }
 
     public async Task<VideoPlan?> LoadAsync(Guid jobId, CancellationToken cancellationToken)
     {
-        var filePath = Path.Combine(GetJobDirectory(jobId), FileName);
+        var filePath = Path.Combine(_locator.GetJobDirectory(jobId), FileName);
         if (!File.Exists(filePath))
         {
             return null;
         }
 
-        await using var stream = File.OpenRead(filePath);
-        return await JsonSerializer.DeserializeAsync<VideoPlan>(stream, JsonOptions, cancellationToken);
+        VideoPlan? plan;
+        try
+        {
+            await using var stream = File.OpenRead(filePath);
+            plan = await JsonSerializer.DeserializeAsync<VideoPlan>(stream, JsonOptions, cancellationToken);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException(CorruptMessage(jobId, filePath, ex.Message), ex);
+        }
+
+        // A file containing just "null" would otherwise read as "no plan yet" and silently
+        // send the job back to planning.
+        return plan ?? throw new InvalidDataException(CorruptMessage(jobId, filePath, "it contains no plan"));
     }
 
-    // jobId is always a Guid (never user-supplied text), so this can never escape
-    // _rootDirectory via path traversal - the CLAUDE.md section 18 "sanitize filenames"
-    // rule is satisfied by construction here, not by extra runtime checks.
-    private string GetJobDirectory(Guid jobId) => Path.Combine(_rootDirectory, jobId.ToString());
+    private static string CorruptMessage(Guid jobId, string filePath, string detail) =>
+        $"The scene plan of video job '{jobId}' ({filePath}) can't be read: {detail.TrimEnd('.')}. " +
+        "If it was edited by hand, fix or delete plan.json and generate the plan again.";
 }

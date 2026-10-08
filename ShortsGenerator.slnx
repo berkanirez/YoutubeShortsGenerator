@@ -11,4 +11,7 @@
     <Project Path="tests/ShortsGenerator.Domain.Tests/ShortsGenerator.Domain.Tests.csproj" />
     <Project Path="tests/ShortsGenerator.Infrastructure.Tests/ShortsGenerator.Infrastructure.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/ShortsGenerator.AssetTool/ShortsGenerator.AssetTool.csproj" />
+  </Folder>
 </Solution>

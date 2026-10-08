@@ -20,6 +20,38 @@ public class OllamaLlmProviderTests
     }
 
     [Fact]
+    public async Task GenerateJsonAsync_SendsTheSchemaAsOllamasFormat()
+    {
+        string? body = null;
+        var provider = CreateProvider(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().Result;
+            return JsonResponse(HttpStatusCode.OK, new { response = "{}" });
+        });
+
+        await provider.GenerateJsonAsync("Plan it", """{"type":"object","properties":{"n":{"type":"integer"}}}""", CancellationToken.None);
+
+        using var json = JsonDocument.Parse(body!);
+        Assert.Equal("object", json.RootElement.GetProperty("format").GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public async Task GenerateAsync_PlainText_SendsNoFormatAtAll()
+    {
+        string? body = null;
+        var provider = CreateProvider(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().Result;
+            return JsonResponse(HttpStatusCode.OK, new { response = "OK" });
+        });
+
+        await provider.GenerateAsync("Say OK", CancellationToken.None);
+
+        using var json = JsonDocument.Parse(body!);
+        Assert.False(json.RootElement.TryGetProperty("format", out _));
+    }
+
+    [Fact]
     public async Task GenerateAsync_Throws_WhenOllamaUnreachable()
     {
         var provider = CreateProvider(_ => throw new HttpRequestException("Connection refused"));
@@ -37,6 +69,53 @@ public class OllamaLlmProviderTests
 
         var ex = await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
         Assert.Contains("pull", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_ServerError_ThrowsUnavailableWithOllamasOwnMessage()
+    {
+        // What Ollama really answers when the model doesn't fit in memory.
+        var provider = CreateProvider(_ => new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent("{\"error\":\"model requires more system memory (5.6 GiB) than is available (3.1 GiB)\"}", Encoding.UTF8, "application/json"),
+        });
+
+        var ex = await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Contains("500", ex.Message);
+        Assert.Contains("more system memory", ex.Message);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_BodyIsNotOllamaJson_ThrowsUnavailableInsteadOfAJsonException()
+    {
+        var provider = CreateProvider(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("<html>proxy error</html>", Encoding.UTF8, "text/html"),
+        });
+
+        var ex = await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Contains("unexpected", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_HttpClientTimeout_ThrowsUnavailableSayingItDidNotAnswer()
+    {
+        // HttpClient.Timeout surfaces as a TaskCanceledException although nobody cancelled.
+        var provider = CreateProvider(_ => throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout of 120 seconds elapsing.",
+            new TimeoutException()));
+
+        var ex = await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Contains("did not answer", ex.Message);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_CallerCancels_StillThrowsOperationCanceled()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var provider = CreateProvider(_ => throw new TaskCanceledException());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => provider.GenerateAsync("Say OK", cts.Token));
     }
 
     [Fact]

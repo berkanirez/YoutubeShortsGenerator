@@ -1,0 +1,37 @@
+{
+  "name": "renderer",
+  "version": "1.0.0",
+  "description": "My Remotion video",
+  "repository": {},
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.534",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.534",
+    "@types/react": "19.2.7",
+    "@types/web": "0.0.166",
+    "eslint": "9.39.5",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.3"
+  },
+  "scripts": {
+    "sync-assets": "node scripts/sync-public-assets.mjs",
+    "predev": "npm run sync-assets",
+    "dev": "remotion studio",
+    "prerender": "npm run sync-assets",
+    "render": "remotion render",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade",
+    "lint": "eslint src && tsc",
+    "test": "vitest run",
+    "presmoke": "npm run sync-assets",
+    "smoke": "node scripts/smoke-render.mjs"
+  }
+}

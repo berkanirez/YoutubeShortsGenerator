@@ -1,0 +1,18 @@
+node_modules
+dist
+.DS_Store
+.env
+
+# Ignore the output video from Git but not videos you import into src/.
+out
+
+# Synced from the repo's real assets/ and samples/ by scripts/sync-public-assets.mjs
+# (see Day 8 code notes) - a disposable mirror, not a source of truth.
+public/assets
+public/samples
+
+# Output of `npx remotion bundle` (regenerable)
+build
+
+# Per-job render inputs (plan.json + narration.wav) staged from output/<job-id>/
+public/jobs

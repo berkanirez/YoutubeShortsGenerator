@@ -32,4 +32,10 @@ public sealed class VideoJobRepository : IVideoJobRepository
             .OrderByDescending(job => job.CreatedAt)
             .Take(take)
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<VideoJob>> ListWithPendingWorkAsync(CancellationToken cancellationToken) =>
+        await _dbContext.VideoJobs
+            .Where(job => job.PendingWork != null)
+            .OrderBy(job => job.UpdatedAt)
+            .ToListAsync(cancellationToken);
 }

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Abstract placeholder: forearm plank, straight line from head to heels -->
+  <rect x="16" y="150" width="168" height="8" rx="4" fill="#E2E8F0"/>
+  <circle cx="34" cy="108" r="15" fill="#2DD4BF"/>
+  <rect x="46" y="104" width="128" height="20" rx="10" transform="rotate(8 110 114)" fill="#2DD4BF"/>
+  <line x1="52" y1="120" x2="52" y2="146" stroke="#2DD4BF" stroke-width="10" stroke-linecap="round"/>
+  <line x1="52" y1="146" x2="74" y2="146" stroke="#2DD4BF" stroke-width="10" stroke-linecap="round"/>
+  <line x1="172" y1="130" x2="176" y2="146" stroke="#2DD4BF" stroke-width="9" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,89 @@
+{
+  "title": "Why Your Pull-Ups Aren't Increasing",
+  "hook": "Stuck at the same pull-up count for months?",
+  "targetDurationSeconds": 30,
+  "narrationText": "If you're stuck at the same pull-up count, it's probably your form. Keep your core tight and avoid swinging. Pull your chest towards the bar, not just your chin. Your lats, not your arms, should do most of the work. Add weight once you can do ten clean reps. Track your progress every single week.",
+  "style": null,
+  "captionStyle": null,
+  "musicMood": null,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "order": 1,
+      "type": "Hook",
+      "durationSeconds": 4,
+      "narration": "If you're stuck at the same pull-up count, it's probably your form.",
+      "onScreenText": "Stuck at the same number?",
+      "assetIds": ["mascot-thinking"],
+      "animation": "punchZoom",
+      "sfx": null,
+      "background": null,
+      "emphasis": "same pull-up count"
+    },
+    {
+      "id": "scene-2",
+      "order": 2,
+      "type": "ExerciseDemo",
+      "durationSeconds": 5,
+      "narration": "Keep your core tight and avoid swinging.",
+      "onScreenText": "No swinging",
+      "assetIds": ["pullup-bottom"],
+      "animation": "slide",
+      "sfx": null,
+      "background": null,
+      "emphasis": "core tight"
+    },
+    {
+      "id": "scene-3",
+      "order": 3,
+      "type": "ExerciseDemo",
+      "durationSeconds": 5,
+      "narration": "Pull your chest towards the bar, not just your chin.",
+      "onScreenText": "Chest to the bar",
+      "assetIds": ["pullup-top"],
+      "animation": "slide",
+      "sfx": null,
+      "background": null,
+      "emphasis": "chest"
+    },
+    {
+      "id": "scene-4",
+      "order": 4,
+      "type": "AnatomyHighlight",
+      "durationSeconds": 5,
+      "narration": "Your lats, not your arms, should do most of the work.",
+      "onScreenText": "Lats, not arms",
+      "assetIds": ["biceps-highlight"],
+      "animation": "highlight",
+      "sfx": null,
+      "background": null,
+      "emphasis": "lats"
+    },
+    {
+      "id": "scene-5",
+      "order": 5,
+      "type": "Progress",
+      "durationSeconds": 6,
+      "narration": "Add weight once you can do ten clean reps.",
+      "onScreenText": "10 clean reps -> add weight",
+      "assetIds": ["dumbbell"],
+      "animation": "counter",
+      "sfx": null,
+      "background": null,
+      "emphasis": "ten clean reps"
+    },
+    {
+      "id": "scene-6",
+      "order": 6,
+      "type": "Outro",
+      "durationSeconds": 5,
+      "narration": "Track your progress every single week.",
+      "onScreenText": "Track every week",
+      "assetIds": ["mascot-happy"],
+      "animation": "bounce",
+      "sfx": null,
+      "background": null,
+      "emphasis": "every single week"
+    }
+  ]
+}

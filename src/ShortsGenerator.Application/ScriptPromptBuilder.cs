@@ -14,7 +14,10 @@ public static class ScriptPromptBuilder
         sb.AppendLine();
         sb.AppendLine($"Topic: {topic}");
         sb.AppendLine();
-        sb.AppendLine($"Write {ScriptValidator.MinWords}-{ScriptValidator.MaxWords} words of plain spoken English.");
+        sb.AppendLine(
+            $"Write {ScriptValidator.TargetMinWords}-{ScriptValidator.TargetMaxWords} words of plain spoken English " +
+            $"(never fewer than {ScriptValidator.MinWords} or more than {ScriptValidator.MaxWords}).");
+        sb.AppendLine("Use short, complete sentences - one idea per sentence.");
         sb.AppendLine("Rules:");
         sb.AppendLine("- Focus on exercise technique, training principles, or general training knowledge.");
         sb.AppendLine("- Never diagnose, prescribe, promise a cure, or claim to treat a disease or injury.");

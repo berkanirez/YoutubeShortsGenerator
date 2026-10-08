@@ -24,4 +24,8 @@ internal sealed class InMemoryVideoJobRepository : IVideoJobRepository
     public Task<IReadOnlyList<VideoJob>> ListRecentAsync(int take, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<VideoJob>>(
             _jobs.Values.OrderByDescending(job => job.CreatedAt).Take(take).ToList());
+
+    public Task<IReadOnlyList<VideoJob>> ListWithPendingWorkAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<VideoJob>>(
+            _jobs.Values.Where(job => job.PendingWork is not null).OrderBy(job => job.UpdatedAt).ToList());
 }

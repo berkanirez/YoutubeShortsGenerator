@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Calendar icon with ticked days - consistency over weeks -->
+  <rect x="30" y="40" width="140" height="130" rx="16" fill="#E2E8F0"/>
+  <rect x="30" y="40" width="140" height="34" rx="16" fill="#FB923C"/>
+  <rect x="58" y="28" width="10" height="26" rx="5" fill="#64748B"/>
+  <rect x="132" y="28" width="10" height="26" rx="5" fill="#64748B"/>
+  <path d="M52 100 l8 8 l14 -16" stroke="#22C55E" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M92 100 l8 8 l14 -16" stroke="#22C55E" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M132 100 l8 8 l14 -16" stroke="#22C55E" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M52 140 l8 8 l14 -16" stroke="#22C55E" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="92" y="128" width="26" height="26" rx="6" fill="#CBD5E1"/>
+  <rect x="132" y="128" width="26" height="26" rx="6" fill="#CBD5E1"/>
+</svg>

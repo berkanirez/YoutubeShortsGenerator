@@ -35,11 +35,11 @@ public class PlanJsonExtractorTests
     [Fact]
     public void Extract_ConvertsStringNullLiteralToRealNull()
     {
-        const string raw = "{\"animation\":\"null\",\"onScreenText\":\"null\",\"assetIds\":[]}";
+        const string raw = "{\"onScreenText\":\"null\",\"sfx\":\"null\",\"assetIds\":[]}";
 
         var result = PlanJsonExtractor.Extract(raw);
 
-        Assert.Equal("{\"animation\":null,\"onScreenText\":null,\"assetIds\":[]}", result);
+        Assert.Equal("{\"onScreenText\":null,\"sfx\":null,\"assetIds\":[]}", result);
     }
 
     [Fact]
@@ -50,5 +50,15 @@ public class PlanJsonExtractorTests
         var result = PlanJsonExtractor.Extract(raw);
 
         Assert.Equal(raw, result);
+    }
+
+    [Fact]
+    public void Extract_DefaultsAGenuineNullAnimationToFade()
+    {
+        const string raw = "{\"id\":\"scene-9\",\"animation\":null,\"sfx\":null}";
+
+        var result = PlanJsonExtractor.Extract(raw);
+
+        Assert.Equal("{\"id\":\"scene-9\",\"animation\":\"fade\",\"sfx\":null}", result);
     }
 }

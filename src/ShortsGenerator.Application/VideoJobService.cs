@@ -15,6 +15,17 @@ public sealed class VideoJobService
 
     public async Task<VideoJob> CreateJobAsync(string topic, string? sourceScript, CancellationToken cancellationToken)
     {
+        // An own script is used as written, so it's checked now: the user learns it's too short
+        // in the response, not half a minute later from a failed background job.
+        if (!string.IsNullOrWhiteSpace(sourceScript))
+        {
+            var validation = ScriptValidator.Validate(sourceScript);
+            if (!validation.IsValid)
+            {
+                throw new ArgumentException($"Your script can't be used: {string.Join(" ", validation.Reasons)}", nameof(sourceScript));
+            }
+        }
+
         var job = VideoJob.Create(topic, sourceScript, _timeProvider.GetUtcNow());
         await _repository.AddAsync(job, cancellationToken);
         return job;

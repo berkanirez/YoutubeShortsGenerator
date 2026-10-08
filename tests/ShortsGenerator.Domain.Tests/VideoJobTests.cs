@@ -27,6 +27,100 @@ public class VideoJobTests
     }
 
     [Fact]
+    public void Create_TopicLongerThanTheLimit_Throws_ButTheLimitItselfIsFine()
+    {
+        Assert.Throws<ArgumentException>(() => VideoJob.Create(new string('a', VideoJob.MaxTopicLength + 1), null, Now));
+        Assert.Equal(VideoJob.MaxTopicLength, VideoJob.Create(new string('a', VideoJob.MaxTopicLength), null, Now).Topic.Length);
+    }
+
+    public enum Transition { Planning, Narrating, Rendering, Completed, Failed }
+
+    // The whole state machine in one table: every (from, transition) pair, not just the ones
+    // someone thought of. A new allowed edge has to be added here on purpose.
+    private static readonly HashSet<(VideoJobStatus From, Transition To)> Allowed =
+    [
+        (VideoJobStatus.Created, Transition.Planning),
+        (VideoJobStatus.Planning, Transition.Narrating),
+        (VideoJobStatus.Narrating, Transition.Rendering),
+        (VideoJobStatus.Rendering, Transition.Completed),
+        (VideoJobStatus.Completed, Transition.Rendering),   // re-render (Day 13)
+        (VideoJobStatus.Completed, Transition.Narrating),   // narration edit (Day 23)
+        (VideoJobStatus.Created, Transition.Failed),
+        (VideoJobStatus.Planning, Transition.Failed),
+        (VideoJobStatus.Narrating, Transition.Failed),
+        (VideoJobStatus.Rendering, Transition.Failed),
+    ];
+
+    public static TheoryData<VideoJobStatus, Transition> EveryPair()
+    {
+        var data = new TheoryData<VideoJobStatus, Transition>();
+        foreach (var from in Enum.GetValues<VideoJobStatus>())
+        {
+            foreach (var to in Enum.GetValues<Transition>())
+            {
+                data.Add(from, to);
+            }
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(EveryPair))]
+    public void StateMachine_AllowsExactlyTheDocumentedTransitions(VideoJobStatus from, Transition to)
+    {
+        var job = JobIn(from);
+        var statusBefore = job.Status;
+
+        var act = () => Apply(job, to);
+
+        if (Allowed.Contains((from, to)))
+        {
+            act();
+            Assert.Equal(Enum.Parse<VideoJobStatus>(to.ToString()), job.Status);
+        }
+        else
+        {
+            Assert.Throws<InvalidOperationException>(act);
+            Assert.Equal(statusBefore, job.Status);   // a refused transition changes nothing
+        }
+    }
+
+    private static VideoJob JobIn(VideoJobStatus status)
+    {
+        var job = VideoJob.Create("Topic", null, Now);
+        var path = status switch
+        {
+            VideoJobStatus.Created => Array.Empty<Transition>(),
+            VideoJobStatus.Planning => [Transition.Planning],
+            VideoJobStatus.Narrating => [Transition.Planning, Transition.Narrating],
+            VideoJobStatus.Rendering => [Transition.Planning, Transition.Narrating, Transition.Rendering],
+            VideoJobStatus.Completed => [Transition.Planning, Transition.Narrating, Transition.Rendering, Transition.Completed],
+            VideoJobStatus.Failed => [Transition.Failed],
+            _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Add the new status to this test."),
+        };
+        foreach (var step in path)
+        {
+            Apply(job, step);
+        }
+
+        Assert.Equal(status, job.Status);
+        return job;
+    }
+
+    private static void Apply(VideoJob job, Transition to)
+    {
+        switch (to)
+        {
+            case Transition.Planning: job.MarkPlanning(Now); break;
+            case Transition.Narrating: job.MarkNarrating(Now); break;
+            case Transition.Rendering: job.MarkRendering(Now); break;
+            case Transition.Completed: job.MarkCompleted("final.mp4", Now); break;
+            case Transition.Failed: job.MarkFailed("boom", Now); break;
+        }
+    }
+
+    [Fact]
     public void HappyPath_MovesThroughAllStatusesInOrder()
     {
         var job = VideoJob.Create("Topic", null, Now);
@@ -50,11 +144,45 @@ public class VideoJobTests
     }
 
     [Fact]
+    public void MarkRendering_FromCompleted_AllowsReRenderAndKeepsPreviousVideoUntilDone()
+    {
+        var job = VideoJob.Create("Topic", null, Now);
+        job.MarkPlanning(Now);
+        job.AttachGeneratedScript("script", Now);
+        job.MarkNarrating(Now);
+        job.MarkRendering(Now);
+        job.MarkCompleted("first.mp4", Now);
+
+        job.MarkRendering(Now);
+        Assert.Equal(VideoJobStatus.Rendering, job.Status);
+        Assert.Equal("first.mp4", job.FinalVideoPath);
+
+        job.MarkCompleted("second.mp4", Now);
+        Assert.Equal("second.mp4", job.FinalVideoPath);
+    }
+
+    [Fact]
     public void MarkRendering_FromCreated_Throws()
     {
         var job = VideoJob.Create("Topic", null, Now);
 
         Assert.Throws<InvalidOperationException>(() => job.MarkRendering(Now));
+    }
+
+    [Fact]
+    public void MarkNarrating_FromCompleted_AllowsRegeneratingTheVoiceOver()
+    {
+        var job = VideoJob.Create("Topic", null, Now);
+        job.MarkPlanning(Now);
+        job.AttachGeneratedScript("script", Now);
+        job.MarkNarrating(Now);
+        job.MarkRendering(Now);
+        job.MarkCompleted("final.mp4", Now);
+
+        job.MarkNarrating(Now);
+
+        Assert.Equal(VideoJobStatus.Narrating, job.Status);
+        Assert.Equal("final.mp4", job.FinalVideoPath);
     }
 
     [Fact]

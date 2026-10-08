@@ -33,6 +33,8 @@ public sealed class ShortsGeneratorDbContext : DbContext
             entity.Property(job => job.ErrorMessage);
             entity.Property(job => job.OutputDirectory);
             entity.Property(job => job.FinalVideoPath);
+            entity.Property(job => job.PendingWork).HasConversion<string>().HasMaxLength(50);
+            entity.Property(job => job.InterruptionCount).HasDefaultValue(0);
         });
     }
 }

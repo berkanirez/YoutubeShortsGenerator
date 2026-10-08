@@ -35,7 +35,16 @@ namespace ShortsGenerator.Infrastructure.Migrations
                     b.Property<string>("GeneratedScript")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("InterruptionCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("OutputDirectory")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PendingWork")
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SourceScript")

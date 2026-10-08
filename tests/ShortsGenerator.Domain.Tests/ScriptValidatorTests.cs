@@ -57,4 +57,26 @@ public class ScriptValidatorTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Reasons, r => r.Contains("disallowed medical-claim phrase", StringComparison.OrdinalIgnoreCase));
     }
+
+    [Theory]
+    [InlineData("Secure your grip before every rep.")]
+    [InlineData("Poor form obscures real progress.")]
+    [InlineData("Procure a sturdy bar for your doorway.")]
+    [InlineData("Track how fast you recover between sets.")]
+    public void Validate_WordsMerelyContainingADisallowedPhrase_AreFine(string sentence)
+    {
+        var narration = sentence + " " + string.Join(' ', Enumerable.Repeat("word", ScriptValidator.MinWords));
+
+        var result = ScriptValidator.Validate(narration);
+
+        Assert.True(result.IsValid, string.Join("; ", result.Reasons));
+    }
+
+    [Fact]
+    public void Validate_DisallowedPhraseAtAnyCaseOrNextToPunctuation_IsStillCaught()
+    {
+        var narration = "Stretching CURES, nothing. " + string.Join(' ', Enumerable.Repeat("word", ScriptValidator.MinWords));
+
+        Assert.False(ScriptValidator.Validate(narration).IsValid);
+    }
 }

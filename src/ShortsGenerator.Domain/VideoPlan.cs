@@ -3,9 +3,18 @@ namespace ShortsGenerator.Domain;
 public sealed record VideoPlan(
     string Title,
     string Hook,
-    int TargetDurationSeconds,
+    double TargetDurationSeconds,
     string NarrationText,
     IReadOnlyList<Scene> Scenes,
     string? Style,
     string? CaptionStyle,
-    string? MusicMood);
+    string? MusicMood,
+    // Day 19: the one lesson the viewer should leave with - checked to be different from
+    // earlier videos' takeaways.
+    string? Takeaway = null,
+    // Day 19: soft-rule issues (variation, near-duplicate takeaway) the plan was accepted
+    // with; surfaced in the job's review checklist for the human reviewer.
+    IReadOnlyList<string>? ReviewWarnings = null,
+    // Day 23: a scene's narration text was edited, so narration.wav and every scene's timing
+    // no longer match the words. Rendering is refused until the narration is regenerated.
+    bool NarrationOutdated = false);

@@ -1,0 +1,185 @@
+{
+  "title": "Why Your Pull-Ups Aren\u0027t Increasing",
+  "hook": "Stuck at the same number of pull-ups for months?",
+  "targetDurationSeconds": 30.599999999999998,
+  "narrationText": "Stuck at the same number of pull-ups for months? Doing max sets every day feels productive, but it wears you down. Use slow negatives: lower yourself for three to five seconds. Your lats do most of the pulling. Half reps build half strength; full range builds all of it. Train three days a week, add one rep at a time, and sleep well. Most people add a rep every week or two. Rest days are when the muscle actually adapts.",
+  "scenes": [
+    {
+      "id": "s1",
+      "order": 1,
+      "type": "Hook",
+      "durationSeconds": 3.4,
+      "narration": "Stuck at the same number of pull-ups for months?",
+      "onScreenText": "Stuck at 5 pull-ups?",
+      "assetIds": [
+        "mascot-thinking"
+      ],
+      "animation": "punchZoom",
+      "sfx": "whoosh",
+      "background": null,
+      "emphasis": "same number",
+      "spokenDurationSeconds": 3.1,
+      "secondaryText": null,
+      "items": null
+    },
+    {
+      "id": "s2",
+      "order": 2,
+      "type": "MythVsFact",
+      "durationSeconds": 4.2,
+      "narration": "Doing max sets every day feels productive, but it wears you down.",
+      "onScreenText": "Max out daily",
+      "assetIds": [
+        "mascot-tired"
+      ],
+      "animation": "shake",
+      "sfx": null,
+      "background": null,
+      "emphasis": "wears you down",
+      "spokenDurationSeconds": 3.9,
+      "secondaryText": "Leave reps in reserve",
+      "items": null
+    },
+    {
+      "id": "s3",
+      "order": 3,
+      "type": "ExerciseDemo",
+      "durationSeconds": 3.8,
+      "narration": "Use slow negatives: lower yourself for three to five seconds.",
+      "onScreenText": "Slow negatives",
+      "assetIds": [
+        "pullup-top"
+      ],
+      "animation": "slide",
+      "sfx": null,
+      "background": null,
+      "emphasis": "slow negatives",
+      "spokenDurationSeconds": 3.5,
+      "secondaryText": null,
+      "items": null
+    },
+    {
+      "id": "s4",
+      "order": 4,
+      "type": "AnatomyHighlight",
+      "durationSeconds": 3.2,
+      "narration": "Your lats do most of the pulling.",
+      "onScreenText": "Lats do the work",
+      "assetIds": [
+        "lats-highlight"
+      ],
+      "animation": "highlight",
+      "sfx": null,
+      "background": null,
+      "emphasis": "lats",
+      "spokenDurationSeconds": 2.9,
+      "secondaryText": null,
+      "items": null
+    },
+    {
+      "id": "s5",
+      "order": 5,
+      "type": "Comparison",
+      "durationSeconds": 3.6,
+      "narration": "Half reps build half strength; full range builds all of it.",
+      "onScreenText": "Half reps",
+      "assetIds": [
+        "squat-bottom"
+      ],
+      "animation": "pop",
+      "sfx": "pop",
+      "background": null,
+      "emphasis": "full range",
+      "spokenDurationSeconds": 3.3,
+      "secondaryText": "Full range",
+      "items": null
+    },
+    {
+      "id": "s6",
+      "order": 6,
+      "type": "List",
+      "durationSeconds": 4,
+      "narration": "Train three days a week, add one rep at a time, and sleep well.",
+      "onScreenText": "The plan",
+      "assetIds": [
+        "calendar"
+      ],
+      "animation": "fade",
+      "sfx": null,
+      "background": null,
+      "emphasis": null,
+      "spokenDurationSeconds": 3.7,
+      "secondaryText": null,
+      "items": [
+        "3 days a week",
+        "\u002B1 rep",
+        "Sleep 7-9 h"
+      ]
+    },
+    {
+      "id": "s7",
+      "order": 7,
+      "type": "Progress",
+      "durationSeconds": 3,
+      "narration": "Most people add a rep every week or two.",
+      "onScreenText": "\u002B1 rep / 2 weeks",
+      "assetIds": [
+        "mascot-happy"
+      ],
+      "animation": "counter",
+      "sfx": null,
+      "background": null,
+      "emphasis": "every week",
+      "spokenDurationSeconds": 2.7,
+      "secondaryText": "a typical pace",
+      "items": null
+    },
+    {
+      "id": "s8",
+      "order": 8,
+      "type": "Recovery",
+      "durationSeconds": 3.4,
+      "narration": "Rest days are when the muscle actually adapts.",
+      "onScreenText": "Rest = growth",
+      "assetIds": [
+        "sleep"
+      ],
+      "animation": "pulse",
+      "sfx": null,
+      "background": null,
+      "emphasis": null,
+      "spokenDurationSeconds": 3.1,
+      "secondaryText": null,
+      "items": [
+        "Sleep",
+        "Protein"
+      ]
+    },
+    {
+      "id": "s9",
+      "order": 9,
+      "type": "Outro",
+      "durationSeconds": 2,
+      "narration": null,
+      "onScreenText": "Follow for more",
+      "assetIds": [
+        "mascot-happy"
+      ],
+      "animation": "bounce",
+      "sfx": "success",
+      "background": null,
+      "emphasis": null,
+      "spokenDurationSeconds": null,
+      "secondaryText": null,
+      "items": null
+    }
+  ],
+  "style": "default",
+  "captionStyle": "bold",
+  "musicMood": "upbeat",
+  "takeaway": "Fewer, better reps beat daily max sets.",
+  "reviewWarnings": [
+    "Example warning for the reviewer."
+  ],
+  "narrationOutdated": false
+}

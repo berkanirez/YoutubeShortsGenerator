@@ -28,6 +28,60 @@ public class ScriptGenerationServiceTests
     }
 
     [Fact]
+    public async Task GenerateScriptAsync_WithValidSourceScript_UsesItWithoutCallingTheLlm()
+    {
+        var repository = new InMemoryVideoJobRepository();
+        var job = VideoJob.Create("Pull-ups", ValidNarration("rep"), Now);
+        await repository.AddAsync(job, CancellationToken.None);
+        var llm = new FakeLlmProvider();
+        var service = new ScriptGenerationService(llm, repository, TimeProvider.System);
+
+        var result = await service.GenerateScriptAsync(job.Id, CancellationToken.None);
+
+        Assert.Equal(ValidNarration("rep"), result.GeneratedScript);
+        Assert.Equal(VideoJobStatus.Planning, result.Status);
+        Assert.Empty(llm.ReceivedPrompts);
+    }
+
+    [Fact]
+    public async Task GenerateScriptAsync_WithInvalidSourceScript_FailsWithoutRewritingIt()
+    {
+        var repository = new InMemoryVideoJobRepository();
+        var job = VideoJob.Create("Pull-ups", "Way too short.", Now);
+        await repository.AddAsync(job, CancellationToken.None);
+        var llm = new FakeLlmProvider(ValidNarration());
+        var service = new ScriptGenerationService(llm, repository, TimeProvider.System);
+
+        var ex = await Assert.ThrowsAsync<ScriptGenerationException>(() =>
+            service.GenerateScriptAsync(job.Id, CancellationToken.None));
+
+        Assert.Contains("supplied script", ex.Message);
+        Assert.Empty(llm.ReceivedPrompts);
+        Assert.Equal(VideoJobStatus.Failed, (await repository.GetByIdAsync(job.Id, CancellationToken.None))!.Status);
+    }
+
+    [Fact]
+    public async Task GenerateScriptAsync_NearCopyOfAnEarlierVideo_IsRewritten()
+    {
+        var repository = new InMemoryVideoJobRepository();
+        var earlier = VideoJob.Create("Pull-up basics", null, Now.AddDays(-1));
+        earlier.MarkPlanning(Now);
+        earlier.AttachGeneratedScript(TestNarrations.PullUps, Now);
+        await repository.AddAsync(earlier, CancellationToken.None);
+        var job = VideoJob.Create("Pull-up plateaus", null, Now);
+        await repository.AddAsync(job, CancellationToken.None);
+
+        var fresh = string.Join(' ', Enumerable.Range(1, ScriptValidator.TargetMinWords).Select(i => $"word{i}"));
+        var llm = new FakeLlmProvider(TestNarrations.PullUps, fresh);
+        var service = new ScriptGenerationService(llm, repository, TimeProvider.System);
+
+        var result = await service.GenerateScriptAsync(job.Id, CancellationToken.None);
+
+        Assert.Equal(fresh, result.GeneratedScript);
+        Assert.Contains("Too similar to an earlier video (\"Pull-up basics\"): 100% of its phrases repeat", llm.ReceivedPrompts[1]);
+    }
+
+    [Fact]
     public async Task GenerateScriptAsync_FirstAttemptTooShort_RetriesAndSucceeds()
     {
         var repository = new InMemoryVideoJobRepository();

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shorts Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Shorts Generator <span class="muted">local</span></h1>
+    <div id="health" class="health" aria-label="Local services"></div>
+  </header>
+
+  <main>
+    <section class="left">
+      <form id="create-form" class="card">
+        <label for="topic">Topic</label>
+        <input id="topic" name="topic" required maxlength="200"
+               placeholder="Why Your Pull-Ups Aren't Increasing" autocomplete="off">
+        <details>
+          <summary>Use my own script instead (optional)</summary>
+          <textarea id="script" name="script" rows="6"
+                    placeholder="Paste a 65-140 word narration. It is used as written."></textarea>
+        </details>
+        <button type="submit" id="generate">Generate</button>
+        <p id="form-message" class="message" role="status"></p>
+      </form>
+
+      <div class="card">
+        <h2>Recent videos</h2>
+        <ul id="jobs" class="jobs"></ul>
+      </div>
+      <button type="button" id="browse-assets" class="secondary">Browse assets</button>
+    </section>
+
+    <section class="right card" id="detail">
+      <p class="muted">Select a video, or generate one.</p>
+    </section>
+  </main>
+
+  <template id="detail-template">
+    <div class="detail-head">
+      <h2 data-field="topic"></h2>
+      <span class="badge" data-field="status"></span>
+    </div>
+    <ol class="stages" data-field="stages"></ol>
+    <p class="error" data-field="error" hidden></p>
+    <p class="notice" data-field="outdated" hidden>The plan was edited after this video was rendered. Re-render to see the change.</p>
+    <p class="notice" data-field="narration-outdated" hidden>Narration text was edited: re-rendering will first regenerate the voice-over and its timing.</p>
+    <div class="player" data-field="player" hidden>
+      <video controls preload="metadata" playsinline></video>
+    </div>
+    <div class="actions">
+      <button type="button" data-action="open-folder">Open folder</button>
+      <button type="button" data-action="continue" hidden>Continue</button>
+      <button type="button" data-action="render" hidden>Re-render</button>
+    </div>
+    <p class="path"><span class="muted">Output:</span> <code data-field="path"></code></p>
+    <details data-field="review-box" hidden>
+      <summary>Review checklist (do this before publishing)</summary>
+      <pre data-field="review"></pre>
+    </details>
+    <details data-field="plan-box" hidden>
+      <summary>Scene plan</summary>
+      <div class="settings">
+        <label class="inline">Captions
+          <select data-field="caption-style"><option value="bold">bold</option><option value="boxed">boxed</option></select>
+        </label>
+        <label class="inline">Music
+          <select data-field="music-mood"><option value="upbeat">upbeat</option><option value="calm">calm</option></select>
+        </label>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Type</th><th>On screen</th><th>Asset</th><th>s</th><th></th></tr></thead>
+        <tbody data-field="scenes"></tbody>
+      </table>
+    </details>
+  </template>
+
+  <dialog id="asset-picker">
+    <div class="picker-head">
+      <h2 data-field="picker-title">Assets</h2>
+      <button type="button" class="secondary" data-action="close-picker">Close</button>
+    </div>
+    <div class="picker-filters">
+      <input type="search" data-field="picker-search" placeholder="Filter by id, category or tag">
+      <label class="inline"><input type="checkbox" data-field="picker-compatible" checked> Only assets made for this scene type</label>
+    </div>
+    <p class="message" data-field="picker-message"></p>
+    <div class="asset-grid" data-field="picker-grid"></div>
+  </dialog>
+
+  <dialog id="scene-editor">
+    <form method="dialog" data-field="editor-form">
+      <div class="picker-head">
+        <h2 data-field="editor-title">Edit scene</h2>
+        <button type="button" class="secondary" data-action="close-editor">Cancel</button>
+      </div>
+      <div class="editor-grid">
+        <label>Type <select data-field="e-type"></select></label>
+        <label>Animation <select data-field="e-animation"></select></label>
+        <label>Sound effect <select data-field="e-sfx"></select></label>
+        <label>Emphasis (words spoken in this scene) <input data-field="e-emphasis"></label>
+        <label class="wide">On-screen text <input data-field="e-onScreenText" maxlength="80"></label>
+        <label class="wide">Second text (fact / fix / unlock) <input data-field="e-secondaryText" maxlength="80"></label>
+        <label class="wide">Items (one per line, max 3) <textarea data-field="e-items" rows="3"></textarea></label>
+        <label class="wide">Narration (changing it regenerates the voice-over) <textarea data-field="e-narration" rows="3"></textarea></label>
+      </div>
+      <p class="message" data-field="editor-message"></p>
+      <button type="submit">Save scene</button>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

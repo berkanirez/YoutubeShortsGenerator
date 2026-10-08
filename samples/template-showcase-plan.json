@@ -1,0 +1,20 @@
+{
+  "title": "Template showcase",
+  "hook": "Every scene type has its own template.",
+  "targetDurationSeconds": 36,
+  "narrationText": "Stuck on pull-ups? Here is why. Pull from a dead hang, then drive your chest to the bar. Swinging does not build strength. Strict reps do. Your lats are the engine of every rep. Once you hit ten clean reps, add a little weight. Three things matter: grip, tempo and rest. Sleep and rest days are when you actually get stronger. Save this for your next pull day.",
+  "style": null,
+  "captionStyle": null,
+  "musicMood": "upbeat",
+  "scenes": [
+    { "id": "scene-1", "order": 1, "type": "Hook", "durationSeconds": 4, "narration": "Stuck on pull-ups? Here is why.", "onScreenText": "Stuck on pull-ups?", "assetIds": [], "animation": "punchZoom", "sfx": "whoosh", "background": null, "emphasis": "pull-ups" },
+    { "id": "scene-2", "order": 2, "type": "ExerciseDemo", "durationSeconds": 4, "narration": "Pull from a dead hang, then drive your chest to the bar.", "onScreenText": "Dead hang to chest", "assetIds": ["pullup-bottom"], "animation": "slide", "sfx": null, "background": null, "emphasis": "chest to the bar" },
+    { "id": "scene-3", "order": 3, "type": "Comparison", "durationSeconds": 4, "narration": "Swinging does not build strength.", "onScreenText": "Swinging", "secondaryText": "Strict reps", "assetIds": ["pullup-bar"], "animation": "fade", "sfx": null, "background": null, "emphasis": "swinging" },
+    { "id": "scene-4", "order": 4, "type": "MythVsFact", "durationSeconds": 4, "narration": "Strict reps do.", "onScreenText": "More reps any way", "secondaryText": "Strict reps build strength", "assetIds": ["mascot-thinking"], "animation": "fade", "sfx": "error", "background": null, "emphasis": "strict reps" },
+    { "id": "scene-5", "order": 5, "type": "AnatomyHighlight", "durationSeconds": 4, "narration": "Your lats are the engine of every rep.", "onScreenText": "Lats do the work", "assetIds": ["biceps-highlight"], "animation": "highlight", "sfx": null, "background": null, "emphasis": "lats" },
+    { "id": "scene-6", "order": 6, "type": "Progress", "durationSeconds": 4, "narration": "Once you hit ten clean reps, add a little weight.", "onScreenText": "10 clean reps", "secondaryText": "Add 2.5 kg", "assetIds": ["dumbbell"], "animation": "counter", "sfx": "success", "background": null, "emphasis": "ten clean reps" },
+    { "id": "scene-7", "order": 7, "type": "List", "durationSeconds": 4, "narration": "Three things matter: grip, tempo and rest.", "onScreenText": "Three keys", "items": ["Grip", "Tempo", "Rest"], "assetIds": [], "animation": "fade", "sfx": null, "background": null, "emphasis": "grip" },
+    { "id": "scene-8", "order": 8, "type": "Recovery", "durationSeconds": 4, "narration": "Sleep and rest days are when you actually get stronger.", "onScreenText": "Recover to grow", "items": ["Sleep 8h", "Rest days"], "assetIds": ["mascot-tired"], "animation": "fade", "sfx": null, "background": null, "emphasis": "get stronger" },
+    { "id": "scene-9", "order": 9, "type": "Outro", "durationSeconds": 4, "narration": "Save this for your next pull day.", "onScreenText": "Save for pull day", "assetIds": ["mascot-happy"], "animation": "bounce", "sfx": null, "background": null, "emphasis": "pull day" }
+  ]
+}
