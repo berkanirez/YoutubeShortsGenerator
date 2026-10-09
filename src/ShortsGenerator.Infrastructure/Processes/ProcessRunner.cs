@@ -49,6 +49,11 @@ public sealed class ProcessRunner : IProcessRunner
             throw new ProcessLaunchException($"Could not start '{spec.FileName}': {ex.Message}", ex);
         }
 
+        // Dies with us, even if we crash (see KillOnExitJob), and isn't slowed down by
+        // Windows' efficiency mode when our window is minimized (see FullSpeed).
+        KillOnExitJob.Add(process);
+        FullSpeed.Apply(process);
+
         // Both pipes are drained concurrently from the start: if the child fills the stderr
         // buffer while we're only reading stdout (or vice versa), both sides wait forever.
         var stdoutTask = process.StandardOutput.ReadToEndAsync(CancellationToken.None);

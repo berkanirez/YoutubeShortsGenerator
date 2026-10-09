@@ -67,6 +67,24 @@ public class VideoJobRepositoryTests : IDisposable
         Assert.Equal(older.Id, recent[1].Id);
     }
 
+    [Fact]
+    public async Task PendingWork_IsPersisted_AndListedForRecovery_AfterTheMigration()
+    {
+        var pending = VideoJob.Create("Pending", null, DateTimeOffset.UtcNow);
+        pending.MarkQueued(VideoJobWorkKind.Renarrate, DateTimeOffset.UtcNow);
+        var idle = VideoJob.Create("Idle", null, DateTimeOffset.UtcNow);
+        await _repository.AddAsync(pending, CancellationToken.None);
+        await _repository.AddAsync(idle, CancellationToken.None);
+        _dbContext.ChangeTracker.Clear();   // read back from SQLite, not the tracked instances
+
+        var listed = await _repository.ListWithPendingWorkAsync(CancellationToken.None);
+
+        var job = Assert.Single(listed);
+        Assert.Equal(pending.Id, job.Id);
+        Assert.Equal(VideoJobWorkKind.Renarrate, job.PendingWork);
+        Assert.Equal(0, job.InterruptionCount);
+    }
+
     public void Dispose()
     {
         _dbContext.Dispose();

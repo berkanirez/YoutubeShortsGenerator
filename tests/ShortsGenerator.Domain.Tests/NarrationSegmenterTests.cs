@@ -1,5 +1,23 @@
 namespace ShortsGenerator.Domain.Tests;
 
+public class NarrationSegmenterHookTests
+{
+    [Fact]
+    public void AShortFirstSentence_KeepsTheHookSceneToItself()
+    {
+        // Merging pairs the two shortest neighbours; the 4-word hook + next sentence used to win.
+        const string narration =
+            "Are your pull-ups stuck? It is likely your technique. " +
+            "Start every rep from a dead hang with your arms fully straight below the bar each time. " +
+            "Pull until your chin clears the bar and squeeze your back hard at the very top of it. " +
+            "Lower yourself slowly instead of dropping down as fast as you possibly can every rep.";
+
+        var pieces = NarrationSegmenter.Split(narration, minScenes: 3, maxScenes: 4);
+
+        Assert.Equal("Are your pull-ups stuck?", pieces[0]);
+    }
+}
+
 public class NarrationSegmenterTests
 {
     // The real script from the first end-to-end run (Day 15): 89 words, only 5 sentences.

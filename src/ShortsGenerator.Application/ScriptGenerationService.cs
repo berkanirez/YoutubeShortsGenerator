@@ -94,6 +94,9 @@ public sealed class ScriptGenerationService
     {
         var earlierScripts = await LoadEarlierScriptsAsync(cancellationToken);
         IReadOnlyList<string> failureReasons = [];
+        // A script that is fine except for a weak opening. The hook is a quality rule, not a
+        // safety one: if the model never gets it right, the video is still made with this.
+        string? withoutHook = null;
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
@@ -107,7 +110,15 @@ public sealed class ScriptGenerationService
                 var duplicate = FindNearDuplicate(cleaned, earlierScripts);
                 if (duplicate is null)
                 {
-                    return cleaned;
+                    var hookIssues = HookRule.Check(cleaned);
+                    if (hookIssues.Count == 0)
+                    {
+                        return cleaned;
+                    }
+
+                    withoutHook ??= cleaned;
+                    failureReasons = hookIssues;
+                    continue;
                 }
 
                 failureReasons = [duplicate];
@@ -115,6 +126,11 @@ public sealed class ScriptGenerationService
             }
 
             failureReasons = validation.Reasons;
+        }
+
+        if (withoutHook is not null)
+        {
+            return withoutHook;
         }
 
         throw new ScriptGenerationException(

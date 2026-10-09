@@ -1,36 +1,15 @@
 import React from "react";
-import { AssetView, Badge, Column, Headline, type TemplateProps } from "./shared";
+import { AssetView, Stage, WallText, type TemplateProps } from "./shared";
+import { wallText } from "./wall";
 
-// Muscle focus: the diagram large, with a slow pulsing ring that says "look here".
-export const AnatomyTemplate: React.FC<TemplateProps> = ({
-  scene,
-  frame,
-  fps,
-  palette,
-  badge,
-  assetId,
-  assetSvgById,
-  animation,
-}) => {
-  const beat = (Math.sin((frame / fps) * Math.PI * 1.6) + 1) / 2; // ~0.8 pulses per second
+// Muscle focus: the red-highlighted body as big as the frame allows - the red IS the sign -
+// with the muscle's name on the wall. A slow, slight "breath" keeps the still drawing alive.
+export const AnatomyTemplate: React.FC<TemplateProps> = ({ scene, frame, fps, palette, assetId, assetSvgById, animation }) => {
+  const breath = 1 + Math.sin((frame / fps) * Math.PI * 1.2) * 0.012;
+  const slogan = wallText(scene.onScreenText);
   return (
-    <Column animation={animation}>
-      {badge ? <Badge text={badge} palette={palette} /> : null}
-      {scene.onScreenText ? <Headline text={scene.onScreenText} /> : null}
-      <div style={{ position: "relative", marginTop: 50, width: 640, height: 640 }}>
-        <div
-          style={{
-            position: "absolute",
-            inset: 40,
-            borderRadius: "50%",
-            border: `8px solid ${palette.accent}`,
-            opacity: 0.25 + beat * 0.5,
-            transform: `scale(${0.92 + beat * 0.08})`,
-            boxShadow: `0 0 ${30 + beat * 40}px ${palette.accent}`,
-          }}
-        />
-        <AssetView svg={assetSvgById[assetId]} size={640} shadow={false} />
-      </div>
-    </Column>
+    <Stage animation={animation} wall={slogan ? <WallText text={slogan} color={palette.accent} frame={frame} /> : null}>
+      {(box) => <AssetView svg={assetSvgById[assetId]} box={box} shadow={false} style={{ transform: `scale(${breath})` }} />}
+    </Stage>
   );
 };

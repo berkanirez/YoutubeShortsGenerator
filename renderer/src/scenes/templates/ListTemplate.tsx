@@ -1,62 +1,35 @@
 import React from "react";
 import { GenericTemplate } from "./GenericTemplate";
-import { AssetView, Badge, BODY_FONT, Column, Headline, HEADLINE_FONT, type TemplateProps } from "./shared";
-import { itemStartFrame, revealAt, spokenFrames } from "./staging";
+import { AssetView, Stage, WallText, type TemplateProps } from "./shared";
+import { itemStartFrame, spokenFrames } from "./staging";
+import { currentItem, wallText } from "./wall";
 
-// Numbered points that appear one by one while they're being talked about.
+// Tips take turns on the wall, one at a time while each is being said, instead of a
+// stacked paragraph of bullets. List numbers them ("#2 SLEEP MORE"); Recovery doesn't.
 export const ListTemplate: React.FC<TemplateProps> = (props) => {
-  const { scene, frame, fps, durationInFrames, palette, badge, assetId, assetSvgById, animation } = props;
-  const items = scene.items ?? [];
+  const { scene, frame, fps, durationInFrames, palette, assetId, assetSvgById, animation } = props;
+  const items = (scene.items ?? []).map((item) => wallText(item));
   if (items.length < 2) {
     return <GenericTemplate {...props} />;
   }
 
   const spoken = spokenFrames(scene.spokenDurationSeconds, fps, durationInFrames);
+  const starts = items.map((_, index) => itemStartFrame(index, items.length, spoken));
+  const index = currentItem(frame, starts);
+  const item = items[index];
+  const numbered = scene.type === "List";
+  const text = item ? (numbered ? `#${index + 1} ${item}` : item) : null;
 
   return (
-    <Column animation={animation}>
-      {badge ? <Badge text={badge} palette={palette} /> : null}
-      {scene.onScreenText ? <Headline text={scene.onScreenText} size={72} style={{ marginBottom: 34 }} /> : null}
-      <div style={{ display: "flex", flexDirection: "column", gap: 22, width: 860 }}>
-        {items.map((item, index) => {
-          const shown = revealAt(frame, itemStartFrame(index, items.length, spoken), 8);
-          return (
-            <div
-              key={`${index}-${item}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 28,
-                padding: "20px 28px",
-                borderRadius: 24,
-                backgroundColor: "rgba(15, 23, 42, 0.5)",
-                opacity: shown,
-                transform: `translateX(${(1 - shown) * -60}px)`,
-              }}
-            >
-              <div
-                style={{
-                  flex: "0 0 auto",
-                  width: 76,
-                  height: 76,
-                  borderRadius: "50%",
-                  backgroundColor: palette.accent,
-                  color: "#0F172A",
-                  fontFamily: HEADLINE_FONT,
-                  fontSize: 42,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {index + 1}
-              </div>
-              <div style={{ color: "#FFFFFF", fontFamily: BODY_FONT, fontWeight: 800, fontSize: 54 }}>{item}</div>
-            </div>
-          );
-        })}
-      </div>
-      <AssetView svg={assetSvgById[assetId]} size={300} style={{ marginTop: 40 }} />
-    </Column>
+    <Stage
+      animation={animation}
+      wall={
+        text ? (
+          <WallText key={index} text={text} color={palette.accent} frame={frame - starts[index]} tilt={index % 2 === 0 ? -4 : 3} />
+        ) : null
+      }
+    >
+      {(box) => <AssetView svg={assetSvgById[assetId]} box={box} />}
+    </Stage>
   );
 };

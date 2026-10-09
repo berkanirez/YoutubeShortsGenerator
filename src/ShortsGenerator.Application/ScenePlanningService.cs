@@ -9,7 +9,7 @@ public sealed partial class ScenePlanningService
 {
     private const int MaxAttempts = 5;
     private const int MaxSoundEffects = 3;
-    private const int SoftRuleAttempts = 3;
+    public const int SoftRuleAttempts = 3;
     private const int EarlierPlansToCompare = 20;
     // 3-word phrases: takeaways are one short sentence, so 5-word shingles (used for whole
     // scripts) would almost never match even for the same lesson reworded slightly.
@@ -19,8 +19,13 @@ public sealed partial class ScenePlanningService
     private async Task<IReadOnlyList<(string Topic, VideoPlan Plan)>> LoadEarlierPlansAsync(
         Guid jobId, CancellationToken cancellationToken)
     {
+        // Only videos that were actually made (Day 27): variety matters between what ends up on
+        // the channel. Drafts - plan-only experiments, abandoned or failed jobs - used to count
+        // too, and measurably made planning slower as they piled up (1.5 -> 2.0 attempts per
+        // plan, ~12s each) by "repeating" plans nobody will ever see.
         var earlier = new List<(string, VideoPlan)>();
-        foreach (var job in await _repository.ListRecentAsync(EarlierPlansToCompare, cancellationToken))
+        var recent = await _repository.ListRecentAsync(EarlierPlansToCompare * 5, cancellationToken);
+        foreach (var job in recent.Where(j => j.Status is VideoJobStatus.Completed).Take(EarlierPlansToCompare))
         {
             if (job.Id == jobId)
             {
@@ -39,6 +44,25 @@ public sealed partial class ScenePlanningService
 
     // CLAUDE.md section 4: each Short needs a distinct, meaningful lesson - two videos that
     // teach the same thing in different words are still repetition.
+    // A counter with its number removed has nothing to count: same rule as ResolveAnimation.
+    private static Scene StripUnsourcedNumbers(Scene scene)
+    {
+        var stripped = OnScreenNumbers.Strip(scene);
+        return stripped.Animation is AnimationId.Counter && !(stripped.OnScreenText ?? "").Any(char.IsDigit)
+            ? stripped with { Animation = AnimationId.Pop }
+            : stripped;
+    }
+
+    private const string UnsourcedNumberMarker = "but its narration never says that number";
+
+    // Day 29 (OnScreenNumbers): a number on screen reads as a fact, so it must be one the scene says.
+    private static IEnumerable<string> CheckOnScreenNumbers(VideoPlan plan) =>
+        plan.Scenes
+            .Select(s => (s.Order, Numbers: OnScreenNumbers.Unsourced(s)))
+            .Where(s => s.Numbers.Count > 0)
+            .Select(s => $"Scene {s.Order} shows {string.Join(", ", s.Numbers)} on screen, {UnsourcedNumberMarker}; " +
+                         "only show numbers this scene's narration says (or none).");
+
     private static IEnumerable<string> CheckTakeaway(string? takeaway, IReadOnlyList<(string Topic, string Takeaway)> earlier)
     {
         if (string.IsNullOrWhiteSpace(takeaway))
@@ -141,14 +165,13 @@ public sealed partial class ScenePlanningService
         // different jobs, so the model's habit of following list order doesn't give every
         // video the same skeleton (see PlanVariationRules.CheckAgainstEarlier).
         var variationSeed = jobId.GetHashCode() & int.MaxValue;
-
         IReadOnlyList<string> failureReasons = [];
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             var prompt = ScenePlanPromptBuilder.Build(topic, segments, knownAssets, failureReasons, variationSeed);
             var raw = await _llmProvider.GenerateJsonAsync(prompt, schema, cancellationToken);
 
-            var (plan, reasons) = TryBuildPlan(PlanJsonExtractor.Extract(raw), segments, narrationText, knownAssets, knownAssetIds);
+            var (plan, reasons) = TryBuildPlan(PlanJsonExtractor.Extract(raw), segments, narrationText, knownAssets, knownAssetIds, topic);
             if (plan is not null)
             {
                 // Soft rules (variety, unique takeaway): worth a retry while attempts are cheap,
@@ -158,9 +181,18 @@ public sealed partial class ScenePlanningService
                 var softIssues = PlanVariationRules.Check(plan)
                     .Concat(PlanVariationRules.CheckAgainstEarlier(plan, earlierPlans))
                     .Concat(CheckTakeaway(plan.Takeaway, earlierTakeaways))
+                    .Concat(CheckOnScreenNumbers(plan))
                     .ToList();
                 if (softIssues.Count == 0 || attempt >= SoftRuleAttempts)
                 {
+                    // An invented number never reaches the screen, even when the model kept
+                    // writing one: those texts are removed (the captions still carry the scene).
+                    plan = plan with { Scenes = plan.Scenes.Select(StripUnsourcedNumbers).ToList() };
+                    softIssues = softIssues
+                        .Select(issue => issue.Contains(UnsourcedNumberMarker, StringComparison.Ordinal)
+                            ? issue.Replace("; only show numbers this scene's narration says (or none).", " - that text was removed from the screen.")
+                            : issue)
+                        .ToList();
                     _logger.LogInformation(
                         "Job {JobId}: scene plan accepted on attempt {Attempt} ({SceneCount} scenes, {WarningCount} review warnings)",
                         jobId, attempt, segments.Count, softIssues.Count);
@@ -188,7 +220,8 @@ public sealed partial class ScenePlanningService
         IReadOnlyList<string> segments,
         string narrationText,
         IReadOnlyList<AssetMetadata> knownAssets,
-        IReadOnlySet<string> knownAssetIds)
+        IReadOnlySet<string> knownAssetIds,
+        string topic)
     {
         GeneratedVisualPlan? generated;
         try
@@ -234,7 +267,7 @@ public sealed partial class ScenePlanningService
                 DurationSeconds: EstimateSeconds(segments[i]),
                 Narration: segments[i],
                 OnScreenText: onScreenText,
-                AssetIds: AssetMatcher.Improve(visual.AssetIds ?? [], type, $"{onScreenText} {segments[i]}", knownAssets),
+                AssetIds: AssetMatcher.Improve(visual.AssetIds ?? [], type, $"{onScreenText} {segments[i]}", knownAssets, topic),
                 Animation: ResolveAnimation(visual.Animation, visual.OnScreenText),
                 Sfx: sfx,
                 Background: null,
@@ -252,7 +285,8 @@ public sealed partial class ScenePlanningService
             Real(generated.Hook) ?? segments[0],
             scenes.Sum(s => s.DurationSeconds),
             narrationText,
-            scenes,
+            // Repetition repaired in code rather than by another ~13s attempt (Day 29).
+            AssetMatcher.Spread(scenes, knownAssets, topic),
             Style: null,
             CaptionStyle: null,
             MusicMood: MusicMood.Normalize(generated.MusicMood),

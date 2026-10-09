@@ -14,7 +14,8 @@ public interface IRenderer
 /// <param name="OutputPath">Absolute path of the .mp4 to create (or overwrite).</param>
 public sealed record RenderRequest(Guid JobId, string PlanPath, string? NarrationPath, string OutputPath);
 
-public sealed record RenderResult(string OutputPath, long FileSizeBytes, TimeSpan Elapsed);
+// Skipped (Day 27): the existing video was made from exactly these inputs and was reused.
+public sealed record RenderResult(string OutputPath, long FileSizeBytes, TimeSpan Elapsed, bool Skipped = false);
 
 public sealed record RendererAvailability(bool IsReady, string Engine, IReadOnlyList<string> Problems, string? SetupHint = null);
 

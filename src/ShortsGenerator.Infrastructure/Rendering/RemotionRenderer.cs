@@ -79,6 +79,21 @@ public sealed partial class RemotionRenderer : IRenderer
     {
         ValidateRequest(request);
 
+        var fingerprintPath = Path.ChangeExtension(request.OutputPath, ".inputs.sha256");
+        var fingerprint = _options.SkipUnchangedRenders ? await FingerprintAsync(request, cancellationToken) : null;
+        if (fingerprint is not null && File.Exists(request.OutputPath) && File.Exists(fingerprintPath) &&
+            (await File.ReadAllTextAsync(fingerprintPath, cancellationToken)).Trim() == fingerprint)
+        {
+            // Touched so the video doesn't look older than plan.json (the dashboard's "outdated"
+            // check, Day 22) after e.g. an edit that was reverted.
+            File.SetLastWriteTimeUtc(request.OutputPath, DateTime.UtcNow);
+            var existing = new FileInfo(request.OutputPath).Length;
+            _logger.LogInformation(
+                "Job {JobId}: plan, narration, renderer and assets are unchanged since the last render; reusing {OutputPath}",
+                request.JobId, request.OutputPath);
+            return new RenderResult(request.OutputPath, existing, TimeSpan.Zero, Skipped: true);
+        }
+
         var availability = await CheckAvailabilityAsync(cancellationToken);
         if (!availability.IsReady)
         {
@@ -100,6 +115,9 @@ public sealed partial class RemotionRenderer : IRenderer
                     CliPath, "render", _options.EntryPoint, _options.CompositionId, temporaryOutput,
                     "--props", propsPath,
                     "--log", "warn",
+                    .. (_options.Concurrency is { } concurrency
+                        ? new[] { "--concurrency", concurrency.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                        : []),
                 ],
                 StandardInput: null,
                 Timeout: TimeSpan.FromSeconds(_options.TimeoutSeconds),
@@ -121,6 +139,11 @@ public sealed partial class RemotionRenderer : IRenderer
             }
 
             File.Move(temporaryOutput, request.OutputPath, overwrite: true);
+            if (fingerprint is not null)
+            {
+                await File.WriteAllTextAsync(fingerprintPath, fingerprint, cancellationToken);
+            }
+
             var size = new FileInfo(request.OutputPath).Length;
             _logger.LogInformation(
                 "Rendered job {JobId} to {OutputPath} ({SizeKb} kB) in {ElapsedSeconds:0.0}s",
@@ -132,6 +155,49 @@ public sealed partial class RemotionRenderer : IRenderer
         {
             TryDelete(() => Directory.Delete(stagingDirectory, recursive: true), stagingDirectory);
             TryDelete(() => File.Delete(temporaryOutput), temporaryOutput);
+        }
+    }
+
+    // Everything a render's pixels and sound depend on: this job's plan and narration, the
+    // renderer's own code and lock file, and the shared assets (drawings, music, sfx). Any
+    // byte changing in any of them changes the hash. A few MB of hashing: milliseconds.
+    private async Task<string> FingerprintAsync(RenderRequest request, CancellationToken cancellationToken)
+    {
+        var files = new List<(string Name, string Path)> { ("job/plan.json", request.PlanPath) };
+        if (request.NarrationPath is not null)
+        {
+            files.Add(("job/narration.wav", request.NarrationPath));
+        }
+
+        AddTree(files, "renderer/src", Path.Combine(_options.RendererDirectory, "src"));
+        AddTree(files, "assets", Path.Combine(_options.RendererDirectory, "..", "assets"));
+        var lockFile = Path.Combine(_options.RendererDirectory, "package-lock.json");
+        if (File.Exists(lockFile))
+        {
+            files.Add(("renderer/package-lock.json", lockFile));
+        }
+
+        using var hash = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+        foreach (var (name, path) in files.OrderBy(f => f.Name, StringComparer.Ordinal))
+        {
+            hash.AppendData(System.Text.Encoding.UTF8.GetBytes(name + "\0"));
+            await using var stream = File.OpenRead(path);
+            hash.AppendData(await System.Security.Cryptography.SHA256.HashDataAsync(stream, cancellationToken));
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset());
+
+        static void AddTree(List<(string, string)> files, string prefix, string directory)
+        {
+            if (!Directory.Exists(directory))
+            {
+                return;
+            }
+
+            foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            {
+                files.Add(($"{prefix}/{Path.GetRelativePath(directory, file).Replace('\\', '/')}", file));
+            }
         }
     }
 

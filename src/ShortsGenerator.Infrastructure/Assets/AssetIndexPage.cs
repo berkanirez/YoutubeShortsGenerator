@@ -22,13 +22,18 @@ public static class AssetIndexPage
         sb.AppendLine("body{font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:24px}");
         sb.AppendLine(".grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}");
         sb.AppendLine(".card{background:#1e293b;border-radius:12px;padding:12px}.art{height:180px;display:flex;align-items:center;justify-content:center}");
-        sb.AppendLine(".art svg{max-width:100%;max-height:100%}.id{font-weight:bold;margin-top:8px}.meta{font-size:12px;color:#94a3b8}");
+        sb.AppendLine(".art svg,.art img{max-width:100%;max-height:100%}.id{font-weight:bold;margin-top:8px}.meta{font-size:12px;color:#94a3b8}");
         sb.AppendLine("</style></head><body>");
         sb.AppendLine($"<h1>Asset index ({assets.Count})</h1><div class=\"grid\">");
         foreach (var asset in assets.OrderBy(a => a.Category).ThenBy(a => a.Id))
         {
             var path = Path.GetFullPath(Path.Combine(manifestDirectory, asset.FilePath));
-            var art = File.Exists(path) ? File.ReadAllText(path) : "<em>missing file</em>";
+            var art = !File.Exists(path)
+                ? "<em>missing file</em>"
+                : path.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                    // Embedded, so the page works wherever it is saved.
+                    ? $"<img alt=\"\" src=\"data:image/png;base64,{Convert.ToBase64String(File.ReadAllBytes(path))}\">"
+                    : File.ReadAllText(path);
             sb.AppendLine("<div class=\"card\">");
             sb.AppendLine($"<div class=\"art\">{art}</div>");
             sb.AppendLine($"<div class=\"id\">{WebUtility.HtmlEncode(asset.Id)}</div>");

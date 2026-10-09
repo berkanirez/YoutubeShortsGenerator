@@ -57,7 +57,7 @@ public sealed class ReviewChecklistTests : IDisposable
         await repository.AddAsync(job, CancellationToken.None);
         await planStore.SaveAsync(job.Id, new VideoPlan("My Short", "H", 30, "n", [], null, null, null), CancellationToken.None);
         File.WriteAllBytes(Path.Combine(_locator.GetJobDirectory(job.Id), "narration.wav"), [1]);
-        var writer = new RecordingArtifactWriter();
+        var writer = new TempArtifactWriter(_locator);
 
         await new RenderService(new FakeRenderer(), repository, _locator, TimeProvider.System, planStore, writer)
             .RenderAsync(job.Id, CancellationToken.None);
@@ -65,16 +65,5 @@ public sealed class ReviewChecklistTests : IDisposable
         var (fileName, content) = Assert.Single(writer.Written);
         Assert.Equal("review.md", fileName);
         Assert.Contains("My Short", content);
-    }
-
-    private sealed class RecordingArtifactWriter : IJobArtifactWriter
-    {
-        public List<(string FileName, string Content)> Written { get; } = [];
-
-        public Task<string> WriteTextAsync(Guid jobId, string fileName, string content, CancellationToken cancellationToken)
-        {
-            Written.Add((fileName, content));
-            return Task.FromResult(fileName);
-        }
     }
 }

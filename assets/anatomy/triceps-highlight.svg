@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Abstract arm shape (back view) with the triceps region highlighted - schematic -->
-  <rect x="85" y="30" width="30" height="70" rx="15" fill="#94A3B8"/>
-  <rect x="80" y="95" width="40" height="70" rx="18" fill="#94A3B8"/>
-  <ellipse cx="100" cy="65" rx="18" ry="32" fill="#38BDF8" opacity="0.85"/>
-  <circle cx="100" cy="100" r="10" fill="#64748B"/>
-</svg>

@@ -1,5 +1,6 @@
 import { staticFile } from "remotion";
 import { z } from "zod";
+import { imageArt, isRasterPath } from "./art";
 
 // A tiny, dependency-free stand-in for Node's path.posix.normalize/join:
 // this file is bundled into the browser context Remotion renders in (see Day
@@ -72,14 +73,16 @@ async function loadManifest(): Promise<Map<string, string>> {
       const relativeFromManifestDir = joinAndNormalizePosix("manifests", entry.filePath);
 
       const assetUrl = staticFile(`assets/${relativeFromManifestDir}`);
-      const assetResponse = await fetch(assetUrl);
+      // PNG art is only checked for existence here and shown by URL (AssetView uses
+      // Remotion's <Img>, which holds the frame until the image has loaded).
+      const assetResponse = await fetch(assetUrl, isRasterPath(entry.filePath) ? { method: "HEAD" } : undefined);
       if (!assetResponse.ok) {
         throw new Error(
           `Asset '${entry.id}' points to a missing file: '${assetUrl}' (HTTP ${assetResponse.status}).`,
         );
       }
 
-      svgById.set(entry.id, await assetResponse.text());
+      svgById.set(entry.id, isRasterPath(entry.filePath) ? imageArt(assetUrl) : await assetResponse.text());
     }
 
     return svgById;

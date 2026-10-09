@@ -46,7 +46,8 @@ public static class DashboardEndpoints
 
             context.Response.Headers.ContentSecurityPolicy = "default-src 'none'; style-src 'unsafe-inline'";
             context.Response.Headers.XContentTypeOptions = "nosniff";
-            return Results.File(asset.FilePath, "image/svg+xml");
+            return Results.File(asset.FilePath,
+                asset.FilePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png" : "image/svg+xml");
         })
             .WithName("GetAssetSvg");
 

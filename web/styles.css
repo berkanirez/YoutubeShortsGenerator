@@ -73,5 +73,10 @@ select { padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); ba
 .editor-grid label { display: flex; flex-direction: column; gap: 4px; margin: 0; }
 .editor-grid .wide { grid-column: 1 / -1; }
 td button + button { margin-left: 6px; }
+.checks { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+label.check { color: var(--text); font-size: 14px; align-items: flex-start; }
+.verdict { font-size: 14px; color: var(--muted); }
+.verdict.ok, .badge.Reviewed { color: var(--green); }
+.badge.Reviewed { background: #14532d; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
 th, td { text-align: left; padding: 6px; border-bottom: 1px solid var(--line); vertical-align: top; }

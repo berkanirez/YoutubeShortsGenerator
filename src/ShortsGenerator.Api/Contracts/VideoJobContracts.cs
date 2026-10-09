@@ -66,10 +66,12 @@ public sealed record VideoJobResponse(
     string? ErrorMessage,
     string? FinalVideoPath,
     // The plan was edited after the video was rendered (Day 22): re-render to see the change.
-    bool VideoOutdated = false)
+    bool VideoOutdated = false,
+    // Day 28: a person ticked the whole review checklist for this exact render.
+    bool IsReviewed = false)
 {
     public static VideoJobResponse FromDomain(
-        VideoJob job, IVideoJobQueue? queue = null, Guid? runningJobId = null, bool videoOutdated = false) => new(
+        VideoJob job, IVideoJobQueue? queue = null, Guid? runningJobId = null, bool videoOutdated = false, bool isReviewed = false) => new(
         job.Id,
         job.Topic,
         job.SourceScript,
@@ -81,5 +83,8 @@ public sealed record VideoJobResponse(
         job.UpdatedAt,
         job.ErrorMessage,
         job.FinalVideoPath,
-        videoOutdated);
+        videoOutdated,
+        isReviewed);
 }
+
+public sealed record ReviewStateRequest(IReadOnlyList<bool> Checked);

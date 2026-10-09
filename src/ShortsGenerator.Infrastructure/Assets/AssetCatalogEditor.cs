@@ -47,15 +47,16 @@ public sealed class AssetCatalogEditor
             return new(svgProblems, [], assets.Count);
         }
 
-        // Naming convention (docs/ASSETS.md): assets/<category folder>/<id>.svg - the file name
-        // always comes from the validated id, never from the source file's name.
-        var target = Path.Combine(_assetsRoot, folder, $"{asset.Id}.svg");
+        // Naming convention (docs/ASSETS.md): assets/<category folder>/<id>.<svg|png> - the file
+        // name always comes from the validated id, never from the source file's name.
+        var extension = Path.GetExtension(asset.SourceSvgPath).ToLowerInvariant();
+        var target = Path.Combine(_assetsRoot, folder, $"{asset.Id}{extension}");
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         File.Copy(asset.SourceSvgPath, target, overwrite: false);
 
         assets.Add(new AssetMetadata(
             asset.Id,
-            $"../{folder}/{asset.Id}.svg",
+            $"../{folder}/{asset.Id}{extension}",
             asset.Category,
             asset.Tags.Select(t => t.Trim().ToLowerInvariant()).Where(t => t.Length > 0).ToList(),
             asset.CompatibleSceneTypes,
@@ -82,15 +83,38 @@ public sealed class AssetCatalogEditor
         // Only the file changes: id, tags and scene types stay, so every existing plan that
         // references this id keeps working and simply renders the new drawing.
         var target = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(_manifestPath)!, existing.FilePath));
-        var backup = File.ReadAllBytes(target);
-        File.Copy(sourceSvgPath, target, overwrite: true);
-        return SaveAndValidate(assets, rollback: () => File.WriteAllBytes(target, backup));
+        var extension = Path.GetExtension(sourceSvgPath).ToLowerInvariant();
+        if (string.Equals(Path.GetExtension(target), extension, StringComparison.OrdinalIgnoreCase))
+        {
+            var backup = File.ReadAllBytes(target);
+            File.Copy(sourceSvgPath, target, overwrite: true);
+            return SaveAndValidate(assets, rollback: () => File.WriteAllBytes(target, backup));
+        }
+
+        // A different format (e.g. a hand-drawn SVG replaced by the user's PNG art): the file
+        // moves to <id>.png and the manifest entry follows; the old file goes once all is valid.
+        var newTarget = Path.ChangeExtension(target, extension);
+        File.Copy(sourceSvgPath, newTarget, overwrite: true);
+        var index = assets.IndexOf(existing);
+        assets[index] = existing with { FilePath = Path.ChangeExtension(existing.FilePath, extension).Replace('\\', '/') };
+        File.Move(target, target + ".replaced", overwrite: true);   // out of the way of the orphan check
+        var report = SaveAndValidate(assets, rollback: () =>
+        {
+            File.Delete(newTarget);
+            File.Move(target + ".replaced", target, overwrite: true);
+        });
+        if (report.IsValid)
+        {
+            File.Delete(target + ".replaced");
+        }
+
+        return report;
     }
 
-    private List<string> CheckSource(string sourceSvgPath) =>
-        File.Exists(sourceSvgPath)
-            ? AssetManifestValidator.ValidateSvg(sourceSvgPath).Select(p => $"{Path.GetFileName(sourceSvgPath)}: {p}").ToList()
-            : [$"Source file '{sourceSvgPath}' does not exist."];
+    private List<string> CheckSource(string sourcePath) =>
+        File.Exists(sourcePath)
+            ? AssetManifestValidator.ValidateArt(sourcePath).Select(p => $"{Path.GetFileName(sourcePath)}: {p}").ToList()
+            : [$"Source file '{sourcePath}' does not exist."];
 
     private List<AssetMetadata> Load() =>
         JsonSerializer.Deserialize<List<AssetMetadata>>(File.ReadAllText(_manifestPath), JsonOptions) ?? [];

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Abstract arm shape with the biceps region highlighted - schematic, not medical art -->
-  <rect x="85" y="30" width="30" height="70" rx="15" fill="#94A3B8"/>
-  <rect x="80" y="95" width="40" height="70" rx="18" fill="#94A3B8"/>
-  <ellipse cx="100" cy="60" rx="22" ry="28" fill="#FB923C" opacity="0.85"/>
-  <circle cx="100" cy="100" r="10" fill="#64748B"/>
-</svg>

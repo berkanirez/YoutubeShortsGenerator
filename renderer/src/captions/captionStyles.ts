@@ -38,7 +38,7 @@ export const CAPTION_STYLES = {
     fontWeight: 900,
     textTransform: "uppercase",
     color: "#FFFFFF",
-    emphasisColor: "#FB923C",
+    emphasisColor: "#FFD60A",
     outlineColor: "#000000",
     outlineWidth: 6,
     boxColor: null,
@@ -53,10 +53,10 @@ export const CAPTION_STYLES = {
     fontWeight: 700,
     textTransform: "none",
     color: "#FFFFFF",
-    emphasisColor: "#2DD4BF",
+    emphasisColor: "#FFD60A",
     outlineColor: "#000000",
     outlineWidth: 0,
-    boxColor: "rgba(15, 23, 42, 0.78)",
+    boxColor: "rgba(28, 25, 23, 0.85)",
   },
 } as const satisfies Record<string, CaptionStyle>;
 

@@ -11,6 +11,19 @@ public static class ReviewChecklist
 {
     public const string FileName = "review.md";
 
+    // The human half of the review (CLAUDE.md section 4: a human review step before
+    // publishing). One list for review.md and for the dashboard's tick boxes (Day 28).
+    public static IReadOnlyList<string> HumanChecks { get; } =
+    [
+        "Every claim is accurate and cautiously worded - no medical or treatment claims.",
+        "The narration sounds natural; no mispronounced words or odd pauses.",
+        "Captions match the voice and are readable on a phone.",
+        "Each scene's visual fits what is being said at that moment.",
+        "Music and sound effects never cover the voice.",
+        "It teaches something an earlier video didn't (takeaway above).",
+        "Title and description are yours to write; nothing is posted automatically.",
+    ];
+
     public static string Build(VideoJob job, VideoPlan plan, DateTimeOffset renderedAt)
     {
         var scenes = plan.Scenes.OrderBy(s => s.Order).ToList();
@@ -62,13 +75,12 @@ public static class ReviewChecklist
         sb.AppendLine();
         sb.AppendLine("## Your checklist (V1 never uploads - publishing is your decision)");
         sb.AppendLine();
-        sb.AppendLine("- [ ] Every claim is accurate and cautiously worded - no medical or treatment claims.");
-        sb.AppendLine("- [ ] The narration sounds natural; no mispronounced words or odd pauses.");
-        sb.AppendLine("- [ ] Captions match the voice and are readable on a phone.");
-        sb.AppendLine("- [ ] Each scene's visual fits what is being said at that moment.");
-        sb.AppendLine("- [ ] Music and sound effects never cover the voice.");
-        sb.AppendLine("- [ ] It teaches something an earlier video didn't (takeaway above).");
-        sb.AppendLine("- [ ] Title and description are yours to write; nothing is posted automatically.");
+        foreach (var check in HumanChecks)
+        {
+            sb.AppendLine($"- [ ] {check}");
+        }
+
+        sb.AppendLine("(Tick them in the dashboard's review box: a video counts as reviewed once all are ticked.)");
         sb.AppendLine();
         sb.AppendLine("## Script");
         sb.AppendLine();

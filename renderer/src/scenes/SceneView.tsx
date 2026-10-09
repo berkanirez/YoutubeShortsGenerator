@@ -4,7 +4,7 @@ import { getAnimation } from "../animations/primitives";
 import type { Scene } from "../schemas/videoPlan";
 import { SceneBackground } from "./SceneBackground";
 import { TEMPLATE_BY_SCENE_TYPE } from "./templates";
-import { BADGE_BY_SCENE_TYPE, displayAssetId, PALETTE_BY_SCENE_TYPE, type ScenePalette } from "./theme";
+import { displayAssetId, PALETTE_BY_SCENE_TYPE, type ScenePalette } from "./theme";
 
 // Content starts entering just after the background starts opening, so the
 // transition and the entrance read as one movement. Kept to 2 frames: a longer
@@ -47,7 +47,6 @@ export const SceneView: React.FC<SceneViewProps> = ({
         fps={fps}
         durationInFrames={durationInFrames}
         palette={palette}
-        badge={BADGE_BY_SCENE_TYPE[scene.type]}
         assetId={displayAssetId(scene)}
         assetSvgById={assetSvgById}
         animation={getAnimation(scene.animation, { frame: contentFrame, fps, durationInFrames })}

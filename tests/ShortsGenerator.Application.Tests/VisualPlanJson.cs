@@ -34,7 +34,7 @@ internal static class VisualPlanJson
         {
             ["scene"] = i + 1,
             ["type"] = typeFor?.Invoke(i) ?? (i == 0 ? "Hook" : i == count - 1 ? "Outro" : MiddleTypes[(i - 1) % MiddleTypes.Length]),
-            ["onScreenText"] = onScreenTextFor?.Invoke(i) ?? $"Scene {i + 1}",
+            ["onScreenText"] = onScreenTextFor?.Invoke(i) ?? $"Scene {(char)('A' + i)}",   // no digits: a number on screen must be one the narration says (Day 29)
             ["assetIds"] = assetsFor?.Invoke(i) ?? (i == 0 ? firstSceneAssetIds ?? [] : Array.Empty<string>()),
             ["animation"] = animationFor?.Invoke(i) ?? "fade",
             ["sfx"] = sfxFor?.Invoke(i),

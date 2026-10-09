@@ -9,6 +9,8 @@ obj/
 node_modules/
 renderer/dist/
 renderer/out/
+# Remotion's downloaded headless Chrome (~280 MB), wherever a script was run from
+.remotion/
 
 # Python (local TTS tooling, added later)
 __pycache__/
@@ -42,3 +44,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local image tooling: the Real-ESRGAN binary/models (download: docs/ASSETS.md) and the
+# 4x-upscaled intermediates - both reproducible, too big for the repo.
+tools/images/realesrgan/
+tools/images/.cache/

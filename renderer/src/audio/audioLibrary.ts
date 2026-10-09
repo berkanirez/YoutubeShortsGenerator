@@ -40,7 +40,8 @@ export const AUDIO_MIX = {
   music: 0.06,
   sfx: 0.35,
   musicFadeInSeconds: 1,
-  musicFadeOutSeconds: 1.5,
+  // The whole closing (timing.ts CLOSING_SECONDS): the music carries the ending out.
+  musicFadeOutSeconds: 2,
 } as const;
 
 // Music volume at a given frame: fades in at the start and out at the end, so

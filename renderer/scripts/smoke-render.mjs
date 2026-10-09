@@ -34,9 +34,10 @@ console.log(`bundled in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
 const inputProps = { planPath, narrationPath: null };
 const composition = await selectComposition({ serveUrl, id: "ShortComposition", inputProps });
-const expectedFrames = plan.scenes.reduce((sum, s) => sum + Math.round(s.durationSeconds * 30), 0);
+// + the 2 s closing after the last word (src/scenes/timing.ts CLOSING_SECONDS).
+const expectedFrames = plan.scenes.reduce((sum, s) => sum + Math.round(s.durationSeconds * 30), 0) + 60;
 check(composition.width === 1080 && composition.height === 1920 && composition.fps === 30, "1080x1920 @ 30 fps");
-check(composition.durationInFrames === expectedFrames, `duration ${composition.durationInFrames} frames = sum of scenes (${expectedFrames})`);
+check(composition.durationInFrames === expectedFrames, `duration ${composition.durationInFrames} frames = sum of scenes + closing (${expectedFrames})`);
 
 // One still from the middle of every scene: each scene type's template must draw something,
 // and something different from the others.

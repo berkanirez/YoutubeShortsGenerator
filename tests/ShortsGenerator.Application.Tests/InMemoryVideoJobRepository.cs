@@ -12,11 +12,18 @@ internal sealed class InMemoryVideoJobRepository : IVideoJobRepository
         return Task.CompletedTask;
     }
 
+    // Jobs are stored by reference, so "what was saved" is captured separately for tests that
+    // care about *when* a field reached the database.
+    private readonly Dictionary<Guid, VideoJobWorkKind?> _savedPendingWork = [];
+
     public Task UpdateAsync(VideoJob job, CancellationToken cancellationToken)
     {
         _jobs[job.Id] = job;
+        _savedPendingWork[job.Id] = job.PendingWork;
         return Task.CompletedTask;
     }
+
+    public VideoJobWorkKind? SavedPendingWork(Guid id) => _savedPendingWork.GetValueOrDefault(id);
 
     public Task<VideoJob?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(_jobs.GetValueOrDefault(id));

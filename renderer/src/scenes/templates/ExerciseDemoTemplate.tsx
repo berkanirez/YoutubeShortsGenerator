@@ -1,13 +1,14 @@
 import React from "react";
 import { GenericTemplate } from "./GenericTemplate";
-import { AssetView, Badge, BODY_FONT, Column, Headline, type TemplateProps } from "./shared";
+import { AssetView, Stage, WALL_FONT, WallText, type TemplateProps } from "./shared";
 import { poseCounterpart, repPose } from "./staging";
+import { wallText } from "./wall";
 
 // Exercise assets come in pose pairs (pullup-top / pullup-bottom). Alternating
 // between them with a short crossfade turns two still drawings into a rep - the
 // cheapest possible "animation rig", and it counts the reps as it goes.
 export const ExerciseDemoTemplate: React.FC<TemplateProps> = (props) => {
-  const { scene, frame, fps, palette, badge, assetId, assetSvgById, animation } = props;
+  const { scene, frame, fps, palette, assetId, assetSvgById, animation } = props;
   const partner = poseCounterpart(assetId);
   const partnerSvg = partner ? assetSvgById[partner] : undefined;
   if (!partner || !partnerSvg) {
@@ -17,32 +18,37 @@ export const ExerciseDemoTemplate: React.FC<TemplateProps> = (props) => {
   const topId = assetId.endsWith("-top") ? assetId : partner;
   const bottomId = topId === assetId ? partner : assetId;
   const { top, reps } = repPose(frame, fps);
+  const slogan = wallText(scene.onScreenText);
 
   return (
-    <Column animation={animation}>
-      {badge ? <Badge text={badge} palette={palette} /> : null}
-      {scene.onScreenText ? <Headline text={scene.onScreenText} /> : null}
-      <div style={{ position: "relative", width: 600, height: 600, marginTop: 50 }}>
-        <AssetView svg={assetSvgById[bottomId]} size={600} style={{ position: "absolute", opacity: 1 - top }} />
-        <AssetView svg={assetSvgById[topId]} size={600} style={{ position: "absolute", opacity: top }} />
-        <div
-          style={{
-            position: "absolute",
-            right: -20,
-            top: 10,
-            padding: "8px 20px",
-            borderRadius: 999,
-            backgroundColor: palette.accent,
-            color: "#0F172A",
-            fontFamily: BODY_FONT,
-            fontWeight: 900,
-            fontSize: 34,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          REP {reps}
-        </div>
-      </div>
-    </Column>
+    <Stage animation={animation} wall={slogan ? <WallText text={slogan} color={palette.accent} frame={frame} /> : null}>
+      {(box) => (
+        <>
+          <AssetView svg={assetSvgById[bottomId]} box={box} style={{ position: "absolute", opacity: 1 - top }} />
+          <AssetView svg={assetSvgById[topId]} box={box} style={{ position: "absolute", opacity: top }} />
+          {reps > 0 ? (
+            // The rep count as a painted scoreboard number, not a label.
+            <div
+              style={{
+                position: "absolute",
+                right: 40,
+                bottom: box.height * 0.1,
+                color: palette.accent,
+                fontFamily: WALL_FONT,
+                fontSize: 210,
+                lineHeight: 0.85,
+                textAlign: "center",
+                textShadow: "6px 6px 0 rgba(0, 0, 0, 0.45)",
+                transform: "rotate(-6deg)",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {reps}
+              <div style={{ fontSize: 62, letterSpacing: 4 }}>REPS</div>
+            </div>
+          ) : null}
+        </>
+      )}
+    </Stage>
   );
 };

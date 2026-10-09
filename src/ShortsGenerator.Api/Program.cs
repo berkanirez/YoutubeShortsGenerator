@@ -84,23 +84,34 @@ app.MapPost("/api/videos", async (
     .WithName("CreateVideoJob");
 
 app.MapGet("/api/videos", async (
-    VideoJobService service, IVideoJobQueue queue, VideoJobWorker worker, IJobOutputLocator locator,
+    VideoJobService service, IVideoJobQueue queue, VideoJobWorker worker, IJobOutputLocator locator, ReviewService reviews,
     CancellationToken ct, int take = 20) =>
 {
     var jobs = await service.ListRecentJobsAsync(Math.Clamp(take, 1, 100), ct);
-    return Results.Ok(jobs.Select(job => VideoJobResponse.FromDomain(
-        job, queue, worker.CurrentJobId, DashboardEndpoints.IsVideoOutdated(locator, job.Id))));
+    var responses = new List<VideoJobResponse>();
+    foreach (var job in jobs)
+    {
+        var reviewed = job.Status is VideoJobStatus.Completed && (await reviews.GetAsync(job.Id, ct)).IsReviewed;
+        responses.Add(VideoJobResponse.FromDomain(
+            job, queue, worker.CurrentJobId, DashboardEndpoints.IsVideoOutdated(locator, job.Id), reviewed));
+    }
+
+    return Results.Ok(responses);
 })
     .WithName("ListVideoJobs");
 
 app.MapGet("/api/videos/{id:guid}", async (
     Guid id, VideoJobService service, IVideoJobQueue queue, VideoJobWorker worker, IJobOutputLocator locator,
-    CancellationToken ct) =>
+    ReviewService reviews, CancellationToken ct) =>
 {
     var job = await service.GetJobAsync(id, ct);
-    return job is null
-        ? Results.NotFound()
-        : Results.Ok(VideoJobResponse.FromDomain(job, queue, worker.CurrentJobId, DashboardEndpoints.IsVideoOutdated(locator, id)));
+    if (job is null)
+    {
+        return Results.NotFound();
+    }
+
+    var reviewed = job.Status is VideoJobStatus.Completed && (await reviews.GetAsync(id, ct)).IsReviewed;
+    return Results.Ok(VideoJobResponse.FromDomain(job, queue, worker.CurrentJobId, DashboardEndpoints.IsVideoOutdated(locator, id), reviewed));
 })
     .WithName("GetVideoJob");
 
@@ -143,6 +154,32 @@ app.MapPost("/api/videos/{id:guid}/retry", async (
     }
 })
     .WithName("RetryVideoJob");
+
+// Day 28: the human review checklist, per video. Recording only - nothing is ever uploaded.
+app.MapGet("/api/videos/{id:guid}/review-state", async (Guid id, VideoJobService service, ReviewService reviews, CancellationToken ct) =>
+    await service.GetJobAsync(id, ct) is null ? Results.NotFound() : Results.Ok(await reviews.GetAsync(id, ct)))
+    .WithName("GetReviewState");
+
+app.MapPut("/api/videos/{id:guid}/review-state", async (Guid id, ReviewStateRequest request, ReviewService reviews, CancellationToken ct) =>
+{
+    try
+    {
+        return Results.Ok(await reviews.SaveAsync(id, request.Checked ?? [], ct));
+    }
+    catch (KeyNotFoundException)
+    {
+        return Results.NotFound();
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.Conflict(new { error = ex.Message });
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.UnprocessableEntity(new { error = ex.Message });
+    }
+})
+    .WithName("SaveReviewState");
 
 app.MapPost("/api/videos/{id:guid}/script", async (Guid id, ScriptGenerationService service, CancellationToken ct) =>
 {

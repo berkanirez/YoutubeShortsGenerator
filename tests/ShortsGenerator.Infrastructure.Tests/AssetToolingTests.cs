@@ -29,6 +29,75 @@ public sealed class AssetToolingTests : IDisposable
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
 
+    // --- PNG art (the user's own mascot, generated as images) ---
+
+    // Just the PNG signature and IHDR header - all the validator reads.
+    private static byte[] Png(int width, int height)
+    {
+        var bytes = new byte[33];
+        new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, (byte)'I', (byte)'H', (byte)'D', (byte)'R' }.CopyTo(bytes, 0);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(bytes.AsSpan(16), width);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(bytes.AsSpan(20), height);
+        return bytes;
+    }
+
+    private string PngSource(string name, byte[] bytes)
+    {
+        var path = Path.Combine(_root, name);
+        File.WriteAllBytes(path, bytes);
+        return path;
+    }
+
+    [Fact]
+    public void Add_APng_IsStoredAsPng()
+    {
+        var report = new AssetCatalogEditor(_manifest).Add(new NewAsset(
+            "chest-highlight", PngSource("chest.png", Png(1024, 1024)), "anatomy", ["chest"], [SceneType.AnatomyHighlight]));
+
+        Assert.True(report.IsValid, string.Join("; ", report.Errors));
+        Assert.True(File.Exists(Path.Combine(_root, "assets", "anatomy", "chest-highlight.png")));
+        Assert.Contains("\"filePath\": \"../anatomy/chest-highlight.png\"", File.ReadAllText(_manifest));
+    }
+
+    [Theory]
+    [InlineData("fake.png", "not a PNG")]          // a renamed file
+    [InlineData("tiny.png", "at least 256")]       // too small to look sharp at 600px
+    [InlineData("art.gif", "only .svg or .png")]
+    public void Add_ABadImage_IsRefused(string name, string expected)
+    {
+        var bytes = name switch
+        {
+            "fake.png" => System.Text.Encoding.UTF8.GetBytes("<html>not an image</html>"),
+            "tiny.png" => Png(64, 64),
+            _ => Png(1024, 1024),
+        };
+
+        var report = new AssetCatalogEditor(_manifest).Add(new NewAsset("x-icon", PngSource(name, bytes), "icon", ["x"], [SceneType.List]));
+
+        Assert.False(report.IsValid);
+        Assert.Contains(report.Errors, e => e.Contains(expected));
+    }
+
+    [Fact]
+    public void Replace_AnSvgWithAPng_SwitchesTheFile_AndRemovesTheOldSvg()
+    {
+        var report = new AssetCatalogEditor(_manifest).Replace("mascot-idle", PngSource("idle.png", Png(1024, 1024)));
+
+        Assert.True(report.IsValid, string.Join("; ", report.Errors));
+        Assert.Contains("\"filePath\": \"../mascot/mascot-idle.png\"", File.ReadAllText(_manifest));
+        Assert.True(File.Exists(Path.Combine(_root, "assets", "mascot", "mascot-idle.png")));
+        Assert.False(File.Exists(Path.Combine(_root, "assets", "mascot", "mascot-idle.svg")));
+        Assert.Empty(report.Warnings);   // no orphan left behind
+    }
+
+    [Fact]
+    public void Validate_AnUnreferencedPng_IsReportedAsAnOrphan()
+    {
+        File.WriteAllBytes(Path.Combine(_root, "assets", "mascot", "stray.png"), Png(512, 512));
+
+        Assert.Contains(AssetManifestValidator.Validate(_manifest).Warnings, w => w.Contains("stray.png"));
+    }
+
     [Fact]
     public void Validate_CleanCatalog_IsValid()
     {

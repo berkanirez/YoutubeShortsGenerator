@@ -11,6 +11,8 @@ public static class JobServiceCollectionExtensions
         services.AddScoped<IVideoJobProcessor, VideoGenerationPipeline>();
         services.AddScoped<VideoJobScheduler>();
         services.AddScoped<JobRecoveryService>();
+        services.AddScoped<OutputIndexService>();
+        services.AddScoped<ReviewService>();
         services.AddHostedService<JobRecoveryHostedService>();
 
         // Registered as a singleton first so it can also be injected (e.g. to show which job

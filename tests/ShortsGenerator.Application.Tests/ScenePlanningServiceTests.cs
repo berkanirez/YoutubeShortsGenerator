@@ -212,7 +212,7 @@ public class ScenePlanningServiceTests
         var (repository, job) = await PlannedJobAsync();
         var json = VisualPlanJson.For(Narration, emphasisFor: i => i switch
         {
-            0 => "technique needs work", // in scene 1
+            0 => "pull-ups stuck",       // in scene 1 (the hook sentence on its own)
             1 => "glutes",               // never said
             _ => null,
         });
@@ -221,16 +221,24 @@ public class ScenePlanningServiceTests
 
         var plan = await service.GeneratePlanAsync(job.Id, CancellationToken.None);
 
-        Assert.Equal("technique needs work", plan.Scenes[0].Emphasis);
+        Assert.Equal("pull-ups stuck", plan.Scenes[0].Emphasis);
         Assert.Null(plan.Scenes[1].Emphasis);
     }
 
     [Fact]
     public async Task GeneratePlanAsync_CounterWithoutANumberInTheText_BecomesPop()
     {
-        var (repository, job) = await PlannedJobAsync();
+        // Day 29: the number must also be one the scene says, so this narration says it.
+        const string narration =
+            "Pull-ups stall for a few simple reasons that are easy to fix today. " +
+            "Aim for 10 clean reps before you add any extra weight to the bar. " +
+            "Start every rep from a dead hang with your arms fully straight below you. " +
+            "Pull until your chin clears the bar and squeeze your back at the top. " +
+            "Lower yourself slowly instead of dropping down as fast as you can go. " +
+            "Rest a full day between hard sessions so your muscles can recover well.";
+        var (repository, job) = await PlannedJobAsync(narration);
         var json = VisualPlanJson.For(
-            Narration,
+            narration,
             animationFor: _ => "counter",
             onScreenTextFor: i => i == 1 ? "10 clean reps" : "Wrong muscle");
         var service = new ScenePlanningService(
@@ -315,12 +323,7 @@ public class ScenePlanningServiceTests
     {
         var (repository, job) = await PlannedJobAsync();
         var planStore = new InMemoryVideoPlanStore();
-        var earlierJob = VideoJob.Create("Pull-up basics", null, Now.AddDays(-1));
-        await repository.AddAsync(earlierJob, CancellationToken.None);
-        await planStore.SaveAsync(
-            earlierJob.Id,
-            new VideoPlan("Old", "Hook", 30, "n", [], null, null, null, Takeaway: "Strict reps beat sloppy volume for pull-up progress"),
-            CancellationToken.None);
+        await AddEarlierVideoAsync(repository, planStore, completed: true, "Strict reps beat sloppy volume for pull-up progress");
         var llm = new FakeLlmProvider(
             BuildValidPlanJson(),
             VisualPlanJson.For(Narration, takeaway: "Dead hang starts make every rep count"));
@@ -333,11 +336,52 @@ public class ScenePlanningServiceTests
     }
 
     [Fact]
+    public async Task GeneratePlanAsync_ADraftThatWasNeverMadeIntoAVideo_IsNotAnEarlierVideo()
+    {
+        // Day 27: plan-only experiments and abandoned jobs never reach the channel; "repeating"
+        // them cost a ~12s re-plan for nothing.
+        var (repository, job) = await PlannedJobAsync();
+        var planStore = new InMemoryVideoPlanStore();
+        await AddEarlierVideoAsync(repository, planStore, completed: false, "Strict reps beat sloppy volume for pull-up progress");
+        var llm = new FakeLlmProvider(BuildValidPlanJson());
+        var service = new ScenePlanningService(llm, repository, planStore, new InMemoryAssetRepository(), TimeProvider.System);
+
+        await service.GeneratePlanAsync(job.Id, CancellationToken.None);
+
+        Assert.Single(llm.ReceivedPrompts);
+    }
+
+    private static async Task AddEarlierVideoAsync(
+        InMemoryVideoJobRepository repository, InMemoryVideoPlanStore planStore, bool completed, string takeaway)
+    {
+        var earlierJob = VideoJob.Create("Pull-up basics", null, Now.AddDays(-1));
+        if (completed)
+        {
+            earlierJob.MarkPlanning(Now);
+            earlierJob.MarkNarrating(Now);
+            earlierJob.MarkRendering(Now);
+            earlierJob.MarkCompleted("final.mp4", Now);
+        }
+
+        await repository.AddAsync(earlierJob, CancellationToken.None);
+        await planStore.SaveAsync(
+            earlierJob.Id,
+            new VideoPlan("Old", "Hook", 30, "n", [], null, null, null, Takeaway: takeaway),
+            CancellationToken.None);
+    }
+
+    [Fact]
     public async Task GeneratePlanAsync_PromptPlaceholdersCopiedBack_AreTreatedAsMissing()
     {
-        // Real Day 22 case: a Hook whose on-screen text was literally "max 5 words".
+        // Real Day 22 case: a Hook whose on-screen text was literally "max 5 words"; Day 29: a
+        // half copy ("max Form") - placeholders are now in <...>, and any "<"/">" means a copy.
         var (repository, job) = await PlannedJobAsync();
-        var json = VisualPlanJson.For(Narration, onScreenTextFor: i => i == 0 ? "Max 5 Words" : $"Scene {i + 1}")
+        var json = VisualPlanJson.For(Narration, onScreenTextFor: i => i switch
+            {
+                0 => ScenePlanPromptBuilder.OnScreenTextPlaceholder,
+                1 => "Form <caption",
+                _ => $"Scene {(char)('A' + i)}",
+            })
             .Replace("\"title\":\"Pull-ups\"", "\"title\":\"short video title\"");
         var service = new ScenePlanningService(
             new FakeLlmProvider(json), repository, new InMemoryVideoPlanStore(), new InMemoryAssetRepository(), TimeProvider.System);
@@ -345,7 +389,26 @@ public class ScenePlanningServiceTests
         var plan = await service.GeneratePlanAsync(job.Id, CancellationToken.None);
 
         Assert.Null(plan.Scenes[0].OnScreenText);
+        Assert.Null(plan.Scenes[1].OnScreenText);
+        Assert.Equal("Scene C", plan.Scenes[2].OnScreenText);
         Assert.Equal("Untitled", plan.Title);
+    }
+
+    [Fact]
+    public async Task GeneratePlanAsync_AnInventedNumberOnScreen_IsRetried_AndNeverShownEvenIfTheModelKeepsIt()
+    {
+        // Real Day 29 text: "60 minutes of rest = 1% muscle growth", said nowhere in the narration.
+        var (repository, job) = await PlannedJobAsync();
+        var json = VisualPlanJson.For(Narration, onScreenTextFor: i => i == 2 ? "60 minutes = 1% growth" : $"Scene {(char)('A' + i)}");
+        var llm = new FakeLlmProvider(json, json, json);
+        var service = new ScenePlanningService(llm, repository, new InMemoryVideoPlanStore(), new InMemoryAssetRepository(), TimeProvider.System);
+
+        var plan = await service.GeneratePlanAsync(job.Id, CancellationToken.None);
+
+        Assert.Equal(ScenePlanningService.SoftRuleAttempts, llm.ReceivedPrompts.Count);
+        Assert.Contains("never says that number", llm.ReceivedPrompts[1]);
+        Assert.Null(plan.Scenes[2].OnScreenText);
+        Assert.Contains(plan.ReviewWarnings!, w => w.Contains("60, 1%") && w.Contains("removed from the screen"));
     }
 
     [Fact]
@@ -396,12 +459,12 @@ public class ScenePlanningServiceTests
         Assert.Empty(llm.ReceivedPrompts);
     }
 
-    private static async Task<(InMemoryVideoJobRepository Repository, VideoJob Job)> PlannedJobAsync()
+    private static async Task<(InMemoryVideoJobRepository Repository, VideoJob Job)> PlannedJobAsync(string? narration = null)
     {
         var repository = new InMemoryVideoJobRepository();
         var job = VideoJob.Create("Why Your Pull-Ups Aren't Increasing", null, Now);
         job.MarkPlanning(Now);
-        job.AttachGeneratedScript(Narration, Now);
+        job.AttachGeneratedScript(narration ?? Narration, Now);
         await repository.AddAsync(job, CancellationToken.None);
         return (repository, job);
     }

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <!-- Back view of hips and legs, glutes highlighted - schematic, not medical art -->
-  <rect x="66" y="16" width="68" height="40" rx="16" fill="#94A3B8"/>
-  <rect x="60" y="50" width="80" height="56" rx="26" fill="#94A3B8"/>
-  <rect x="64" y="100" width="30" height="80" rx="15" fill="#94A3B8"/>
-  <rect x="106" y="100" width="30" height="80" rx="15" fill="#94A3B8"/>
-  <ellipse cx="82" cy="80" rx="20" ry="22" fill="#FB923C" opacity="0.85"/>
-  <ellipse cx="118" cy="80" rx="20" ry="22" fill="#FB923C" opacity="0.85"/>
-</svg>

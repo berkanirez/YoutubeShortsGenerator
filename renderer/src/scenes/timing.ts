@@ -22,3 +22,28 @@ export function orderedSceneFrames<T extends Timed>(scenes: readonly T[], fps: n
     return entry;
   });
 }
+
+// After the last word the outro holds while the music fades out and the picture eases into
+// black, instead of the video stopping dead on the final syllable.
+export const CLOSING_SECONDS = 2;
+
+export type TimelineEntry<T extends Timed> = SceneFrames<T> & {
+  // Frames added after the scene's own narration (only the last scene has any).
+  closingFrames: number;
+};
+
+// The video's timeline: the scenes back to back, the last one extended by the closing.
+export function videoTimeline<T extends Timed>(scenes: readonly T[], fps: number): TimelineEntry<T>[] {
+  const ordered = orderedSceneFrames(scenes, fps);
+  const closing = secondsToFrames(CLOSING_SECONDS, fps);
+  return ordered.map((entry, index) =>
+    index === ordered.length - 1
+      ? { ...entry, durationInFrames: entry.durationInFrames + closing, closingFrames: closing }
+      : { ...entry, closingFrames: 0 },
+  );
+}
+
+export function totalFrames(timeline: readonly SceneFrames<Timed>[]): number {
+  const last = timeline[timeline.length - 1];
+  return last ? last.fromFrame + last.durationInFrames : 0;
+}

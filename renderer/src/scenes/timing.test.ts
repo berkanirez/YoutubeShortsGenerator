@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseVideoPlan } from "../schemas/videoPlan";
-import { orderedSceneFrames, secondsToFrames } from "./timing";
+import { CLOSING_SECONDS, orderedSceneFrames, secondsToFrames, totalFrames, videoTimeline } from "./timing";
 
 const plan = () =>
   parseVideoPlan(JSON.parse(readFileSync(new URL("../../../samples/contract-plan.json", import.meta.url), "utf8")), "contract");
@@ -40,5 +40,20 @@ describe("orderedSceneFrames", () => {
     const totalSeconds = p.scenes.reduce((sum, s) => sum + s.durationSeconds, 0);
 
     expect(last.fromFrame + last.durationInFrames).toBe(Math.round(totalSeconds * 30));
+  });
+});
+
+describe("videoTimeline", () => {
+  it("extends only the last scene by the closing, so the video doesn't stop on the last word", () => {
+    const scenes = [
+      { order: 1, durationSeconds: 2 },
+      { order: 2, durationSeconds: 3 },
+    ];
+    const timeline = videoTimeline(scenes, 30);
+    expect(timeline.map((e) => [e.fromFrame, e.durationInFrames, e.closingFrames])).toEqual([
+      [0, 60, 0],
+      [60, 90 + CLOSING_SECONDS * 30, CLOSING_SECONDS * 30],
+    ]);
+    expect(totalFrames(timeline)).toBe(150 + CLOSING_SECONDS * 30);
   });
 });

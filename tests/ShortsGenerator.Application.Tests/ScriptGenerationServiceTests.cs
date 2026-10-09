@@ -6,8 +6,40 @@ public class ScriptGenerationServiceTests
 {
     private static readonly DateTimeOffset Now = new(2026, 10, 6, 12, 0, 0, TimeSpan.Zero);
 
+    // Opens with a hook (HookRule), like every script the service accepts on the first try.
     private static string ValidNarration(string seed = "word") =>
-        string.Join(' ', Enumerable.Repeat(seed, ScriptValidator.MinWords));
+        $"Is your {seed} holding you back? " + string.Join(' ', Enumerable.Repeat(seed, ScriptValidator.MinWords));
+
+    [Fact]
+    public async Task GenerateScriptAsync_WeakOpening_IsRewrittenWithTheHookReasons()
+    {
+        var repository = new InMemoryVideoJobRepository();
+        var job = VideoJob.Create("Running basics", null, Now);
+        await repository.AddAsync(job, CancellationToken.None);
+        var weak = "When it comes to running, form matters. " + string.Join(' ', Enumerable.Repeat("stride", ScriptValidator.MinWords));
+        var llm = new FakeLlmProvider(weak, ValidNarration("stride"));
+
+        var result = await new ScriptGenerationService(llm, repository, TimeProvider.System).GenerateScriptAsync(job.Id, CancellationToken.None);
+
+        Assert.Equal(2, llm.ReceivedPrompts.Count);
+        Assert.Contains("When it comes to", llm.ReceivedPrompts[1]);   // the rejection reason quotes the opener
+        Assert.StartsWith("Is your stride", result.GeneratedScript);
+    }
+
+    [Fact]
+    public async Task GenerateScriptAsync_ModelNeverWritesAHook_TheVideoIsStillMade()
+    {
+        var repository = new InMemoryVideoJobRepository();
+        var job = VideoJob.Create("Running basics", null, Now);
+        await repository.AddAsync(job, CancellationToken.None);
+        var weak = "When it comes to running, form matters. " + string.Join(' ', Enumerable.Repeat("stride", ScriptValidator.MinWords));
+        var llm = new FakeLlmProvider(weak, weak, weak);
+
+        var result = await new ScriptGenerationService(llm, repository, TimeProvider.System).GenerateScriptAsync(job.Id, CancellationToken.None);
+
+        Assert.Equal(VideoJobStatus.Planning, result.Status);
+        Assert.Equal(weak, result.GeneratedScript);
+    }
 
     [Fact]
     public async Task GenerateScriptAsync_ValidFirstAttempt_MarksJobNarrating()
@@ -71,7 +103,7 @@ public class ScriptGenerationServiceTests
         var job = VideoJob.Create("Pull-up plateaus", null, Now);
         await repository.AddAsync(job, CancellationToken.None);
 
-        var fresh = string.Join(' ', Enumerable.Range(1, ScriptValidator.TargetMinWords).Select(i => $"word{i}"));
+        var fresh = "Is your grip the problem? " + string.Join(' ', Enumerable.Range(1, ScriptValidator.TargetMinWords).Select(i => $"word{i}"));
         var llm = new FakeLlmProvider(TestNarrations.PullUps, fresh);
         var service = new ScriptGenerationService(llm, repository, TimeProvider.System);
 

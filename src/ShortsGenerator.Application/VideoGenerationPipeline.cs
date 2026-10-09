@@ -19,6 +19,7 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
     private readonly RenderService _renderService;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<VideoGenerationPipeline> _logger;
+    private readonly OutputIndexService? _outputIndex;
 
     public VideoGenerationPipeline(
         IVideoJobRepository repository,
@@ -28,8 +29,10 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         NarrationService narrationService,
         RenderService renderService,
         TimeProvider timeProvider,
-        ILogger<VideoGenerationPipeline> logger)
+        ILogger<VideoGenerationPipeline> logger,
+        OutputIndexService? outputIndex = null)
     {
+        _outputIndex = outputIndex;
         _repository = repository;
         _planStore = planStore;
         _scriptService = scriptService;
@@ -108,6 +111,10 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
             if (!shuttingDown)
             {
                 await MarkWorkFinishedAsync(item.JobId);
+                if (_outputIndex is not null)
+                {
+                    await _outputIndex.UpdateBestEffortAsync(CancellationToken.None);
+                }
             }
         }
     }

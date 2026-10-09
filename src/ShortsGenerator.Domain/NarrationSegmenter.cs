@@ -101,9 +101,12 @@ public static class NarrationSegmenter
         return true;
     }
 
+    // The first sentence is the hook (HookRule) and gets the Hook scene to itself: a short
+    // punchy opener is exactly what this merge would otherwise glue to the next sentence.
     private static void MergeShortestNeighbours(List<List<string>> pieces)
     {
-        var best = Enumerable.Range(0, pieces.Count - 1).MinBy(i => pieces[i].Count + pieces[i + 1].Count);
+        var first = pieces.Count > 2 ? 1 : 0;
+        var best = Enumerable.Range(first, pieces.Count - 1 - first).MinBy(i => pieces[i].Count + pieces[i + 1].Count);
         pieces[best] = [.. pieces[best], .. pieces[best + 1]];
         pieces.RemoveAt(best + 1);
     }

@@ -115,11 +115,12 @@ export const counter: AnimationFn = ({ frame, fps, durationInFrames }) => {
 };
 
 export const highlight: AnimationFn = ({ frame }) => {
-  // Flares an orange glow (the mascot's accent color) and settles to a faint
-  // one - draws the eye once, then gets out of the way.
-  const glow = interpolate(frame, [0, 10, 25], [0, 28, 10], clamp);
+  // A quick flat "stamp": swells a little and settles - draws the eye once, then
+  // gets out of the way. Was an orange glow, which read as a tech/AI effect on
+  // the flat pale theme.
+  const scale = interpolate(frame, [0, 8, 16], [1, 1.07, 1], clamp);
   return {
-    style: { opacity: fadeIn(frame), filter: `drop-shadow(0 0 ${glow}px #FB923C)` },
+    style: { opacity: fadeIn(frame), transform: `scale(${scale})` },
   };
 };
 

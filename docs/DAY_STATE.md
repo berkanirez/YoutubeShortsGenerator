@@ -1,8 +1,140 @@
 # DAY_STATE.md
 
-Current day: 25
-Status: APPROVED (blanket approval — see below; continuing to Day 26)
-Date: 2026-10-08
+Current day: 30 (final)
+Status: WAITING_APPROVAL — V1 done; Phase 2 is proposed only (docs/PHASE_2_OPTIONS.md)
+and is NOT to be built without the user's explicit approval.
+Date: 2026-10-09
+
+Post-V1 polish (user requests, 2026-10-09/10 — not a roadmap day):
+- Voice am_puck (speed 1.0; a 0.85 slowdown was tried and reverted at the user's request).
+- Own mascot + 37 PNG artworks (exercise pairs incl. dip/curl/deadlift, lunge, running,
+  10 muscle highlights, icons, 10 mascot poses); catalog 40 assets, 0 warnings.
+  prepare_art.py gained --pair (split + floor-aligned) and --keep-holes.
+- Hook: HookRule (first sentence <=14 words, speaks to "you", no slow openers) as a soft
+  retry; the hook sentence gets the first scene to itself.
+- Theme: flat pale backgrounds + static diagonal stripe, dark text, slanted sports
+  badges, diagonal wipe transition; no gradients/glows (read as a tech/AI channel).
+- Visual-first layout: the visual fills the frame (1000-1120 px), no cards/badges/bubbles.
+  Text = a 1-4 word slogan painted on the wall (Impact, tilted, paints on); longer text is
+  left to the captions (wall.ts). Signs instead of words: red X -> green check
+  (MythVsFact/Comparison share VerdictTemplate), giant "?" on question hooks, painted rep
+  count; List/Recovery tips take turns on the wall one at a time. Prompt: onScreenText 1-3 words.
+- Dark gym-grey background for every scene (accent per type; accent slash on the wipe).
+  Art re-cut tight to the figure (prepare_art.py, longer side 1280) and fitted bottom-aligned
+  in a full-width box reaching y=1680: the mascot fills most of the screen.
+- Closing: 2 s after the last word (timing.ts CLOSING_SECONDS) - slow push-in, music fades,
+  last 0.6 s eases to black; captions stay on the narrated part.
+- HD: all art upscaled 4x with Real-ESRGAN anime (local, free, GPU) and prepared at 2048 px;
+  render JPEG quality 95 / CRF 15 (crisp outlines). Binary + HD cache gitignored.
+- Art automation: docs/ART_AUTOMATION_PLAN.md rewritten (gaps filled during generation);
+  plan only, waiting for the owner's 3 decisions (provider, pre-review use, limits).
+- Tests: .NET 435 + renderer 72 passing; real videos 2e960fbb, df1b42a4, 183c8f45, 4120db68.
+
+Completed (Day 30 — V1 finalization):
+- Docs: README (rewritten), ARCHITECTURE (real), CONFIGURATION,
+  TROUBLESHOOTING, LICENSES (Remotion: free for individuals / <=3
+  employees, no selling derivatives; phonemizer/espeak-ng GPL-3.0),
+  PHASE_2_OPTIONS.
+- Repo: `.remotion/` (282 MB downloaded Chrome) ignored.
+- Fixed: dashboard smoke script followed an older same-titled job; the
+  topic-exercise rule now also applies when the model chose no asset.
+- V1 definition (CLAUDE.md section 19) run through the dashboard after the
+  last change: "Why Your Pull-Ups Aren't Increasing" -> Completed in 83s,
+  1080x1920 h264+aac 31.2s, output/269fe16e-051a-428f-a269-1966defb9a37/final.mp4,
+  no paid service.
+
+Tests (Day 30):
+- `dotnet build` 0 warnings; `dotnet test` 413/413; renderer 64/64, lint
+  clean, smoke OK.
+
+Completed (Day 29 — five real sample Shorts):
+- Five roadmap topics generated 4 times (20 videos), reviewed with contact
+  sheets (`tools/workflow/contact-sheet.ps1`, `generate-batch.ps1`).
+  Final five: 1080x1920 h264 30fps + AAC, 33-43s, distinct titles.
+- Systemic fixes:
+  - `AssetMatcher`: generic tag words ignored ("top", "muscle"...),
+    hyphenated words match joined tags ("pull-ups" ~ "pullup"), topic as
+    second clue, ExerciseDemo shows the topic's exercise, an anatomy scene
+    never shows an unrelated muscle (mascot). Tests on the REAL catalog
+    (the fake one had hidden the "pullup" bug).
+  - `AssetMatcher.Spread`: asset repetition repaired in code (all 6 run-1
+    plan rejections; 0 in the 10 later videos).
+  - `Domain/OnScreenNumbers`: no number on screen that the scene's narration
+    doesn't say (25 found, e.g. "60 minutes of rest = 1% muscle growth");
+    soft rule + hard strip with a review warning. 0 left in the final five.
+  - Prompt: Progress example removed ("10 clean reps" copied 3/5),
+    placeholders in <...> (half-copy "max Form").
+  - Renderer `fit.ts`: longest-word and line-count fitting for cards,
+    headlines, hooks, progress labels.
+  - `Processes/FullSpeed`: API and its children opt out of Windows
+    efficiency mode (61s -> 25s render from a minimized window).
+
+Tests (Day 29):
+- `dotnet test` 412/412; renderer 64/64, lint clean, smoke OK.
+
+Completed (Day 28 — one-click creator workflow):
+- `start.cmd` (tools/workflow/start.ps1 + prereqs.ps1): checks .NET, Node,
+  renderer packages, Kokoro, Ollama + model, disk; offers the cheap fixes
+  (npm ci, TTS setup, start Ollama, pull model); starts the API; opens the
+  dashboard. `-CheckOnly`, `-Yes`, `-NoBrowser`.
+- `generate.cmd "topic"`: one command -> starts the API if needed, prints
+  stage progress, video path and the checklist.
+- Review sign-off: `ReviewChecklist.HumanChecks` (one list), `ReviewService`
+  (review-state.json, pinned to the render; stale after a re-render),
+  `GET/PUT /api/videos/{id}/review-state`, dashboard tick boxes (in place,
+  the video keeps playing), "Reviewed" badge. Never uploads.
+- `output/INDEX.md` (`OutputIndexService`): finished videos by date/title,
+  length, reviewed, relative links; updated after every job and review.
+- Fixed: `pause` reset start.cmd's exit code.
+
+Tests (Day 28):
+- `dotnet test` 394/394. Browser: 7 boxes ticked while playing -> Reviewed,
+  video kept playing (test sign-off undone afterwards).
+- Acceptance: API stopped -> `generate.cmd "Why Rest Days Make You
+  Stronger"` -> Completed in 88s.
+
+Completed (Day 27 — performance pass, measured first):
+- Baseline 57.6s (script 10.7 incl. 6.6s model load, plan 11.7, TTS 10.4,
+  render 24.0) -> 48.0s same topic (-17%); script 10.7 -> 2.4s.
+- Ollama timing logged per call; `tools/perf/measure-render.ps1`,
+  `tools/perf/measure-planning.ps1`.
+- Ollama BaseUrl 127.0.0.1 (localhost cost ~2s/video: IPv6 tried first,
+  Ollama listens on IPv4 only); `Ollama:KeepAlive` 15m.
+- Unchanged re-render skipped via input fingerprint (plan, narration,
+  renderer/src, lock file, assets) -> 24.2s -> 0.5s. `Remotion:Concurrency`
+  option (measured table in RemotionOptions).
+- Plans compared only with Completed videos (drafts made planning slower as
+  they piled up): 1.5-2.0 -> 1.0 attempts. Rejected by measurement: listing
+  used openings in the prompt (2.83 attempts). Not done by decision:
+  TTS || plan (~5s, big restructure).
+- Found: PC entered modern standby mid-measurement (keep-awake had stopped
+  with the previous session) -> restarted, measurement repeated.
+
+Tests (Day 27):
+- `dotnet test` 387/387.
+
+Completed (Day 26 — logging, retries, recovery):
+- `VideoJob.PendingWork` + `InterruptionCount` (migration JobPendingWork);
+  `VideoJobWorkKind` moved to Domain. `VideoJobScheduler` saves the intent
+  before enqueueing; every enqueue site uses it. PendingWork = queued *or*
+  running: fixes double-queue / edit-during-renarration race.
+- Pipeline clears PendingWork when work ends (not on shutdown); Narrating
+  with an untimed plan re-runs narration (was: rendered stale audio).
+- `JobRecoveryService` + `JobRecoveryHostedService`: resumes pending jobs at
+  startup (Rendering -> Narrating), gives up after 3 interruptions.
+- Retry: `POST /api/videos/{id}/retry` + dashboard button; resumes at the
+  last stage valid on disk.
+- `JobLogFileLoggerProvider`: output/<job-id>/job.log via the JobId scope.
+- Ollama: one retry for connection refused / 503 only.
+- Fixed: orphaned Remotion/Chrome after an API crash -> Windows Job Object
+  with KILL_ON_JOB_CLOSE (`Processes/KillOnExitJob`).
+
+Tests (Day 26):
+- `dotnet test` 377/377 (Domain 116, Application 128, Infrastructure 107,
+  Api 26); renderer 55/55.
+- Real: wrong Ollama port -> Failed with actionable message + job.log ->
+  Retry -> killed mid-render 3x (render nodes 1 -> 0 after each crash;
+  3rd interruption -> Failed, poison guard) -> Retry -> Completed.
 
 Completed (Day 25 — renderer/schema tests):
 - Zod cross-field rules: unique scene ids, orders exactly 1..n, every scene
@@ -210,12 +342,17 @@ Known issues:
   "wrong" card) or writes generic takeaways — surfaced in review.md.
 - Placeholder art is simple; `replace` swaps drawings without touching
   plans or code when better art exists.
-- Queue is in memory; interrupted jobs aren't recovered yet (Day 26). Two
-  real interrupted jobs exist from Day 21 testing ("How Slow Negatives
-  Build Strength" in Created, one "Why Tempo Reps..." in Planning).
+- Two jobs interrupted on Day 21 (before PendingWork existed) are not
+  auto-resumed; "Continue" resumes them by hand.
+- Orphan-process protection (Job Object) is Windows-only.
+- Day 29: an API instance that has run for a while sometimes renders ~2-3x
+  slower (Chrome grandchildren still subject to Windows' throttling
+  heuristics); restarting the API fixes it. Root cause not proven.
+- The 3B model writes some on-screen labels that don't fit the narration and
+  keeps inventing numbers (removed automatically, but costs re-plans).
+- Day 27/29 measurement runs left ~40 plan-only draft jobs ("Paused") and
+  several duplicate sample videos in the dashboard/output; not deleted (ask).
 - Audio quality was verified by measurement, not by ear.
-- Failed jobs can't be edited or retried; a failed re-render of a Completed
-  job marks it Failed although the old final.mp4 is still on disk (Day 26).
 
 User approval:
 - Day 1 approved ("geçebilirsin") on 2026-09-15.

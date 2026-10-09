@@ -4,7 +4,10 @@ public sealed class OllamaOptions
 {
     public const string SectionName = "Ollama";
 
-    public string BaseUrl { get; set; } = "http://localhost:11434";
+    // 127.0.0.1, not "localhost" (Day 27, measured): Ollama listens on IPv4 only, and .NET on
+    // Windows tries ::1 first; the refused IPv6 attempt cost ~2s on every new connection, i.e.
+    // at the start of every video.
+    public string BaseUrl { get; set; } = "http://127.0.0.1:11434";
 
     public string Model { get; set; } = "llama3.2:3b";
 
@@ -19,4 +22,10 @@ public sealed class OllamaOptions
     public int MaxAttempts { get; set; } = 2;
 
     public double RetryDelaySeconds { get; set; } = 3;
+
+    // Day 27: how long Ollama keeps the model in memory after a call (Ollama's own default is
+    // 5 minutes). Measured: loading llama3.2:3b costs ~6.6s at the start of a video made more
+    // than 5 minutes after the previous one. 15 minutes covers a normal working session at
+    // the price of ~2.5 GB of RAM staying in use meanwhile. "0" unloads right after each call.
+    public string KeepAlive { get; set; } = "15m";
 }

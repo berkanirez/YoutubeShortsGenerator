@@ -206,6 +206,89 @@ public sealed class RemotionRendererTests : IDisposable
             renderer.RenderAsync(Request with { OutputPath = Path.Combine(_jobDirectory, "final.exe") }, CancellationToken.None));
     }
 
+    // --- Day 27: skip a render whose inputs haven't changed ---
+
+    [Fact]
+    public async Task RenderAsync_SameInputsAsTheExistingVideo_SkipsTheRender()
+    {
+        var runner = new ScriptedRunner(onRender: spec => { WriteVideo(spec); return Ok(); });
+        var renderer = CreateRenderer(runner);
+        await renderer.RenderAsync(Request, CancellationToken.None);
+        var renders = runner.Calls.Count(c => c.Arguments.Contains("render"));
+
+        var again = await renderer.RenderAsync(Request, CancellationToken.None);
+
+        Assert.Equal(renders, runner.Calls.Count(c => c.Arguments.Contains("render")));
+        Assert.Equal(4, again.FileSizeBytes);
+        Assert.True(again.Skipped);
+    }
+
+    [Theory]
+    [InlineData("plan.json")]       // a plan edit
+    [InlineData("narration.wav")]   // a new voice-over
+    [InlineData("renderer-src")]    // a change in the renderer's own code
+    [InlineData("asset")]           // a replaced drawing
+    public async Task RenderAsync_AnyInputChanged_RendersAgain(string change)
+    {
+        var assetsDirectory = Path.Combine(_root, "assets");
+        Directory.CreateDirectory(assetsDirectory);
+        File.WriteAllText(Path.Combine(assetsDirectory, "mascot.svg"), "<svg/>");
+        var runner = new ScriptedRunner(onRender: spec => { WriteVideo(spec); return Ok(); });
+        var renderer = CreateRenderer(runner);
+        await renderer.RenderAsync(Request, CancellationToken.None);
+
+        switch (change)
+        {
+            case "plan.json": File.WriteAllText(Request.PlanPath, """{"title":"edited"}"""); break;
+            case "narration.wav": File.WriteAllBytes(Request.NarrationPath!, [9, 9]); break;
+            case "renderer-src": File.WriteAllText(Path.Combine(_rendererDirectory, "src", "index.ts"), "// changed"); break;
+            case "asset": File.WriteAllText(Path.Combine(assetsDirectory, "mascot.svg"), "<svg viewBox='0 0 1 1'/>"); break;
+        }
+
+        var again = await renderer.RenderAsync(Request, CancellationToken.None);
+
+        Assert.Equal(2, runner.Calls.Count(c => c.Arguments.Contains("render")));
+        Assert.False(again.Skipped);
+    }
+
+    [Fact]
+    public async Task RenderAsync_VideoDeletedSinceTheLastRender_RendersAgain()
+    {
+        var runner = new ScriptedRunner(onRender: spec => { WriteVideo(spec); return Ok(); });
+        var renderer = CreateRenderer(runner);
+        await renderer.RenderAsync(Request, CancellationToken.None);
+        File.Delete(Request.OutputPath);
+
+        await renderer.RenderAsync(Request, CancellationToken.None);
+
+        Assert.Equal(2, runner.Calls.Count(c => c.Arguments.Contains("render")));
+    }
+
+    [Fact]
+    public async Task RenderAsync_SkippingDisabled_AlwaysRenders()
+    {
+        _options.SkipUnchangedRenders = false;
+        var runner = new ScriptedRunner(onRender: spec => { WriteVideo(spec); return Ok(); });
+        var renderer = CreateRenderer(runner);
+
+        await renderer.RenderAsync(Request, CancellationToken.None);
+        await renderer.RenderAsync(Request, CancellationToken.None);
+
+        Assert.Equal(2, runner.Calls.Count(c => c.Arguments.Contains("render")));
+    }
+
+    [Fact]
+    public async Task RenderAsync_ConfiguredConcurrency_IsPassedToRemotion()
+    {
+        _options.Concurrency = 4;
+        var runner = new ScriptedRunner(onRender: spec => { WriteVideo(spec); return Ok(); });
+
+        await CreateRenderer(runner).RenderAsync(Request, CancellationToken.None);
+
+        var args = runner.RenderCall!.Arguments.ToList();
+        Assert.Equal("4", args[args.IndexOf("--concurrency") + 1]);
+    }
+
     private RemotionRenderer CreateRenderer(IProcessRunner runner) =>
         new(runner, Options.Create(_options), NullLogger<RemotionRenderer>.Instance);
 

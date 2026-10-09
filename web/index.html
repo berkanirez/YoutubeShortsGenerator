@@ -46,6 +46,7 @@
     </div>
     <ol class="stages" data-field="stages"></ol>
     <p class="error" data-field="error" hidden></p>
+    <p class="muted" data-field="log-hint" hidden>Details: job.log in this video's folder (Open folder).</p>
     <p class="notice" data-field="outdated" hidden>The plan was edited after this video was rendered. Re-render to see the change.</p>
     <p class="notice" data-field="narration-outdated" hidden>Narration text was edited: re-rendering will first regenerate the voice-over and its timing.</p>
     <div class="player" data-field="player" hidden>
@@ -55,10 +56,13 @@
       <button type="button" data-action="open-folder">Open folder</button>
       <button type="button" data-action="continue" hidden>Continue</button>
       <button type="button" data-action="render" hidden>Re-render</button>
+      <button type="button" data-action="retry" hidden>Retry</button>
     </div>
     <p class="path"><span class="muted">Output:</span> <code data-field="path"></code></p>
     <details data-field="review-box" hidden>
       <summary>Review checklist (do this before publishing)</summary>
+      <div class="checks" data-field="review-checks"></div>
+      <p class="verdict" data-field="review-verdict"></p>
       <pre data-field="review"></pre>
     </details>
     <details data-field="plan-box" hidden>

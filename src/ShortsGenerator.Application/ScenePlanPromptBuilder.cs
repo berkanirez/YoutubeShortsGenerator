@@ -11,17 +11,22 @@ public static class ScenePlanPromptBuilder
     // The JSON skeleton's placeholder values, defined once so the planner can recognise
     // them coming back. Found on Day 22 in the dashboard's plan table: a Hook whose
     // on-screen text was literally "max 5 words" - the model had copied the placeholder.
-    public const string TitlePlaceholder = "short video title";
-    public const string HookPlaceholder = "one punchy sentence used as the opening hook";
-    public const string TakeawayPlaceholder = "the one specific lesson of this video, max 12 words";
-    public const string OnScreenTextPlaceholder = "max 5 words";
-    public const string EmphasisPlaceholder = "key words from this scene";
+    // Day 29: in angle brackets. A Hook came back as "max Form" - half of the old "max 5 words"
+    // placeholder plus a word of the model's own, which an exact comparison can't catch. Text
+    // with "<" or ">" in it is never real on-screen content, so any partial copy is caught too.
+    public const string TitlePlaceholder = "<short video title>";
+    public const string HookPlaceholder = "<one punchy opening sentence>";
+    public const string TakeawayPlaceholder = "<the one specific lesson of this video>";
+    public const string OnScreenTextPlaceholder = "<caption>";
+    public const string EmphasisPlaceholder = "<key words from this scene>";
 
     public static IReadOnlyList<string> Placeholders { get; } =
         [TitlePlaceholder, HookPlaceholder, TakeawayPlaceholder, OnScreenTextPlaceholder, EmphasisPlaceholder];
 
     public static bool IsPlaceholder(string? text) =>
-        text is not null && Placeholders.Any(p => string.Equals(p, text.Trim(), StringComparison.OrdinalIgnoreCase));
+        text is not null &&
+        (text.Contains('<') || text.Contains('>') ||
+         Placeholders.Any(p => string.Equals(p.Trim('<', '>'), text.Trim(), StringComparison.OrdinalIgnoreCase)));
 
     public static string Build(
         string topic,
@@ -64,8 +69,8 @@ public static class ScenePlanPromptBuilder
         sb.AppendLine("Rules:");
         sb.AppendLine($"- \"scenes\" must contain exactly {count} entries, numbered 1 to {count}.");
         sb.AppendLine($"- Scene 1 is type \"Hook\" and scene {count} is type \"Outro\". Every other scene uses one of: {middleSceneTypes}.");
-        sb.AppendLine("- \"onScreenText\": a short, punchy caption of at most 5 words that summarizes the scene. Do not");
-        sb.AppendLine("  repeat the whole narration.");
+        sb.AppendLine("- \"onScreenText\": a slogan of 1-3 words painted on the gym wall behind the visual (\"Full range\",");
+        sb.AppendLine("  \"Slow down\"). Not a sentence - the captions already show every spoken word.");
         sb.AppendLine("- \"emphasis\": 1-3 words copied exactly from THAT scene's narration (the key idea), or null.");
         sb.AppendLine("- Each type has its own on-screen template; pick the type whose template fits what the scene says");
         sb.AppendLine("  (this list is in no particular order - do not just follow it):");
@@ -77,7 +82,10 @@ public static class ScenePlanPromptBuilder
         sb.AppendLine("  * Hook / Outro: onScreenText only (secondaryText null, items []).");
         sb.AppendLine("  Use at least 3 different types between Hook and Outro, never the same type twice in a row,");
         sb.AppendLine("  and no type more than twice.");
+
         sb.AppendLine("- Never show the same asset in two consecutive scenes, and no asset more than twice.");
+        sb.AppendLine("- Never put a number in onScreenText, secondaryText or items unless THAT scene's narration says it.");
+        sb.AppendLine("  Use Progress only for a scene whose narration contains a number.");
         sb.AppendLine("- \"takeaway\": the single, specific lesson of THIS video (not generic advice like \"train hard\").");
         sb.AppendLine("- \"animation\" is required, one of: fade, slide, pop, punchZoom, shake, bounce, pulse, counter, highlight.");
         sb.AppendLine("  Use \"counter\" only when the on-screen text contains a number.");
@@ -115,7 +123,9 @@ public static class ScenePlanPromptBuilder
         "    (max 4 words each), both taken from what THIS scene says.",
         "  * List: onScreenText = a short title, items = 2-3 tips of max 4 words each.",
         "  * Recovery: rest, sleep or recovery advice; onScreenText = a short title, items = 2-3 tips.",
-        "  * Progress: onScreenText contains a number (e.g. \"10 clean reps\"), secondaryText = what it unlocks.",
+        // Day 29: the old example ("10 clean reps") came back word for word in 3 of 5 videos.
+        "  * Progress: onScreenText = a number THIS scene's narration mentions plus what it counts\n" +
+        "    (max 4 words), secondaryText = what reaching it gives you.",
         "  * ExerciseDemo: how to perform a movement; onScreenText only. Pair it with an exercise asset.",
         "  * AnatomyHighlight: only when the scene is about which muscle does the work, and only with an\n" +
         "    anatomy asset that shows that muscle; onScreenText only.",

@@ -36,6 +36,22 @@ public class OllamaLlmProviderTests
     }
 
     [Fact]
+    public async Task GenerateAsync_SendsTheConfiguredKeepAlive_SoTheModelStaysLoadedBetweenVideos()
+    {
+        string? body = null;
+        var provider = CreateProvider(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().Result;
+            return JsonResponse(HttpStatusCode.OK, new { response = "OK" });
+        });
+
+        await provider.GenerateAsync("Say OK", CancellationToken.None);
+
+        using var json = JsonDocument.Parse(body!);
+        Assert.Equal("15m", json.RootElement.GetProperty("keep_alive").GetString());
+    }
+
+    [Fact]
     public async Task GenerateAsync_PlainText_SendsNoFormatAtAll()
     {
         string? body = null;
@@ -151,13 +167,70 @@ public class OllamaLlmProviderTests
         Assert.False(result.IsModelAvailable);
     }
 
+    [Fact]
+    public async Task GenerateAsync_ConnectionRefusedOnce_IsRetried_AndSucceeds()
+    {
+        var calls = 0;
+        var provider = CreateProvider(_ => ++calls == 1
+            ? throw new HttpRequestException("Connection refused")
+            : JsonResponse(HttpStatusCode.OK, new { response = "OK" }));
+
+        Assert.Equal("OK", await provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Equal(2, calls);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Busy503_IsRetried_ThenReportedWithOllamasMessage()
+    {
+        var calls = 0;
+        var provider = CreateProvider(_ =>
+        {
+            calls++;
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable) { Content = new StringContent("{\"error\":\"server busy\"}") };
+        });
+
+        var ex = await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Equal(2, calls);
+        Assert.Contains("server busy", ex.Message);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.NotFound)]             // model not pulled: the same next time
+    [InlineData(HttpStatusCode.InternalServerError)]  // e.g. not enough memory: the same next time
+    public async Task GenerateAsync_PermanentErrors_AreNotRetried(HttpStatusCode status)
+    {
+        var calls = 0;
+        var provider = CreateProvider(_ =>
+        {
+            calls++;
+            return new HttpResponseMessage(status) { Content = new StringContent("{\"error\":\"x\"}") };
+        });
+
+        await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public async Task GenerateAsync_Timeout_IsNotRetried()
+    {
+        var calls = 0;
+        var provider = CreateProvider(_ =>
+        {
+            calls++;
+            throw new TaskCanceledException("timeout", new TimeoutException());
+        });
+
+        await Assert.ThrowsAsync<LlmUnavailableException>(() => provider.GenerateAsync("Say OK", CancellationToken.None));
+        Assert.Equal(1, calls);
+    }
+
     private static OllamaLlmProvider CreateProvider(Func<HttpRequestMessage, HttpResponseMessage> responder)
     {
         var httpClient = new HttpClient(new FakeHttpMessageHandler(responder))
         {
             BaseAddress = new Uri("http://localhost:11434"),
         };
-        var options = Options.Create(new OllamaOptions { Model = "llama3.2:3b" });
+        var options = Options.Create(new OllamaOptions { Model = "llama3.2:3b", RetryDelaySeconds = 0 });
         return new OllamaLlmProvider(httpClient, options);
     }
 

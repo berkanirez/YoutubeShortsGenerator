@@ -12,7 +12,7 @@ describe("musicVolumeAt", () => {
   });
 
   it("fades out to silence exactly at the last frame", () => {
-    expect(musicVolumeAt(duration - 45, fps, duration)).toBeCloseTo(AUDIO_MIX.music);
+    expect(musicVolumeAt(duration - AUDIO_MIX.musicFadeOutSeconds * fps, fps, duration)).toBeCloseTo(AUDIO_MIX.music);
     expect(musicVolumeAt(duration, fps, duration)).toBe(0);
   });
 

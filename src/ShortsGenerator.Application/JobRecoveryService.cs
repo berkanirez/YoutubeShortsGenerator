@@ -45,6 +45,8 @@ public sealed class JobRecoveryService
         var gaveUp = new List<Guid>();
         foreach (var job in await _repository.ListWithPendingWorkAsync(cancellationToken))
         {
+            // Same scope as the pipeline's, so these lines land in the job's own job.log.
+            using var scope = _logger.BeginScope(new Dictionary<string, object> { ["JobId"] = job.Id });
             var interruptedWork = job.PendingWork!.Value;
             var interruptedStatus = job.Status;
             if (!job.RecoverAfterInterruption(_timeProvider.GetUtcNow()))
@@ -82,6 +84,7 @@ public sealed class JobRecoveryService
             throw new InvalidOperationException($"Video job '{jobId}' is '{job.Status}'; only failed jobs can be retried.");
         }
 
+        using var scope = _logger.BeginScope(new Dictionary<string, object> { ["JobId"] = job.Id });
         var resumeAt = await ResumePointAsync(job, cancellationToken);
         _logger.LogInformation("Retrying failed job {JobId} from {Status} (was: {Error})", job.Id, resumeAt, job.ErrorMessage);
         job.RetryFrom(resumeAt, _timeProvider.GetUtcNow());

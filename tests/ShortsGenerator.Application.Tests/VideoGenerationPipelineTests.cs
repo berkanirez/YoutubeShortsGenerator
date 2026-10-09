@@ -159,6 +159,58 @@ public sealed class VideoGenerationPipelineTests : IDisposable
             CreatePipeline(llm, new FakeTtsProvider(), new FakeRenderer()).ProcessAsync(Generate(job), cts.Token));
     }
 
+    [Fact]
+    public async Task ProcessAsync_ClearsThePendingMark_AfterSuccessAndAfterAFailure()
+    {
+        var ok = await AddJobAsync();
+        ok.MarkQueued(VideoJobWorkKind.Generate, Now);
+        await CreatePipeline(new FakeLlmProvider(Narration, BuildValidPlanJson()), new FakeTtsProvider { WriteOutputFile = true }, new FakeRenderer())
+            .ProcessAsync(Generate(ok), CancellationToken.None);
+
+        var bad = await AddJobAsync();
+        bad.MarkQueued(VideoJobWorkKind.Generate, Now);
+        await CreatePipeline(new FakeLlmProvider(new NullReferenceException("boom")), new FakeTtsProvider(), new FakeRenderer())
+            .ProcessAsync(Generate(bad), CancellationToken.None);
+
+        Assert.Null((await GetAsync(ok)).PendingWork);
+        Assert.Null((await GetAsync(bad)).PendingWork);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_ShutdownCancellation_KeepsThePendingMark_SoTheWorkResumesOnTheNextStart()
+    {
+        var job = await AddJobAsync();
+        job.MarkQueued(VideoJobWorkKind.Generate, Now);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            CreatePipeline(new FakeLlmProvider(new OperationCanceledException(cts.Token)), new FakeTtsProvider(), new FakeRenderer())
+                .ProcessAsync(Generate(job), cts.Token));
+
+        Assert.Equal(VideoJobWorkKind.Generate, (await GetAsync(job)).PendingWork);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_NarratingButTheAudioNeverFinished_RunsNarrationAgainBeforeRendering()
+    {
+        // Narrating is set when synthesis *starts*; a crash mid-synthesis leaves an untimed plan.
+        var job = await AddJobAsync();
+        var llm = new FakeLlmProvider(Narration, BuildValidPlanJson());
+        await new ScriptGenerationService(llm, _repository, TimeProvider.System).GenerateScriptAsync(job.Id, CancellationToken.None);
+        await new ScenePlanningService(llm, _repository, _planStore, new InMemoryAssetRepository(), TimeProvider.System)
+            .GeneratePlanAsync(job.Id, CancellationToken.None);
+        job.MarkNarrating(Now);
+        var tts = new FakeTtsProvider { WriteOutputFile = true };
+        var renderer = new FakeRenderer();
+
+        await CreatePipeline(new FakeLlmProvider(), tts, renderer).ProcessAsync(Generate(job), CancellationToken.None);
+
+        Assert.Single(tts.Requests);
+        Assert.Single(renderer.Requests);
+        Assert.Equal(VideoJobStatus.Completed, (await GetAsync(job)).Status);
+    }
+
     private VideoGenerationPipeline CreatePipeline(FakeLlmProvider llm, FakeTtsProvider tts, FakeRenderer renderer) =>
         new(
             _repository,

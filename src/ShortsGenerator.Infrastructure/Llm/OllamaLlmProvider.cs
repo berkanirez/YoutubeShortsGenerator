@@ -44,7 +44,8 @@ public sealed class OllamaLlmProvider : ILlmProvider
         }
 
         var request = new OllamaGenerateRequest(
-            _options.Model, prompt, Stream: false, new OllamaGenerateOptions(_options.MaxOutputTokens), format);
+            _options.Model, prompt, Stream: false, new OllamaGenerateOptions(_options.MaxOutputTokens), format,
+            string.IsNullOrWhiteSpace(_options.KeepAlive) ? null : _options.KeepAlive);
 
         for (var attempt = 1; ; attempt++)
         {
@@ -119,6 +120,19 @@ public sealed class OllamaLlmProvider : ILlmProvider
             try
             {
                 var payload = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(JsonOptions, cancellationToken);
+                if (payload is { TotalDuration: > 0 })
+                {
+                    // Ollama's own timing (nanoseconds) - where an LLM call's time actually goes
+                    // (Day 27): loading the model, reading the prompt, or writing the answer.
+                    _logger.LogInformation(
+                        "Ollama {Model}: {Total:0.0}s total (load {Load:0.0}s, prompt {PromptTokens} tokens in {Prompt:0.0}s, " +
+                        "answer {AnswerTokens} tokens in {Answer:0.0}s = {Rate:0.0} tokens/s)",
+                        _options.Model, Seconds(payload.TotalDuration), Seconds(payload.LoadDuration),
+                        payload.PromptEvalCount, Seconds(payload.PromptEvalDuration),
+                        payload.EvalCount, Seconds(payload.EvalDuration),
+                        payload.EvalDuration > 0 ? payload.EvalCount / Seconds(payload.EvalDuration) : 0);
+                }
+
                 return payload?.Response ?? string.Empty;
             }
             catch (Exception ex) when (ex is JsonException or NotSupportedException)
@@ -129,6 +143,8 @@ public sealed class OllamaLlmProvider : ILlmProvider
             }
         }
     }
+
+    private static double Seconds(long nanoseconds) => nanoseconds / 1e9;
 
     private static string ErrorText(string body)
     {
@@ -181,13 +197,24 @@ internal sealed record OllamaGenerateRequest(
     OllamaGenerateOptions Options,
     // Omitted from the request entirely when null (plain-text generation).
     [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    JsonElement? Format = null);
+    JsonElement? Format = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("keep_alive")]
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? KeepAlive = null);
 
 // Mirrors the subset of Ollama's "options" object we care about. num_predict caps how many
 // tokens the model may generate; without it Ollama's own default can truncate a long JSON plan.
 internal sealed record OllamaGenerateOptions(int NumPredict);
 
-internal sealed record OllamaGenerateResponse(string Response);
+// Durations are nanoseconds, as Ollama reports them.
+internal sealed record OllamaGenerateResponse(
+    string Response,
+    [property: System.Text.Json.Serialization.JsonPropertyName("total_duration")] long TotalDuration = 0,
+    [property: System.Text.Json.Serialization.JsonPropertyName("load_duration")] long LoadDuration = 0,
+    [property: System.Text.Json.Serialization.JsonPropertyName("prompt_eval_count")] int PromptEvalCount = 0,
+    [property: System.Text.Json.Serialization.JsonPropertyName("prompt_eval_duration")] long PromptEvalDuration = 0,
+    [property: System.Text.Json.Serialization.JsonPropertyName("eval_count")] int EvalCount = 0,
+    [property: System.Text.Json.Serialization.JsonPropertyName("eval_duration")] long EvalDuration = 0);
 
 internal sealed record OllamaTagsResponse(List<OllamaModelInfo> Models);
 

@@ -6,7 +6,7 @@ import type { CaptionStyle } from "../captions/captionStyles";
 import type { Scene } from "../schemas/videoPlan";
 import { SceneView } from "./SceneView";
 import { PALETTE_BY_SCENE_TYPE } from "./theme";
-import { orderedSceneFrames, secondsToFrames } from "./timing";
+import { secondsToFrames, videoTimeline } from "./timing";
 
 export type SceneRendererProps = {
   scenes: readonly Scene[];
@@ -26,11 +26,11 @@ export const SceneRenderer: React.FC<SceneRendererProps> = ({
   variantSeed,
 }) => {
   const { fps } = useVideoConfig();
-  const timeline = orderedSceneFrames(scenes, fps);
+  const timeline = videoTimeline(scenes, fps);
 
   return (
     <Series>
-      {timeline.map(({ scene, durationInFrames }, index) => {
+      {timeline.map(({ scene, durationInFrames, closingFrames }, index) => {
         const previous = index > 0 ? timeline[index - 1].scene : null;
         return (
           <Series.Sequence key={scene.id} durationInFrames={durationInFrames}>
@@ -49,7 +49,8 @@ export const SceneRenderer: React.FC<SceneRendererProps> = ({
             <CaptionRenderer
               narration={scene.narration}
               emphasis={scene.emphasis}
-              durationInFrames={durationInFrames}
+              // The closing is silent: captions are timed on the narrated part only.
+              durationInFrames={durationInFrames - closingFrames}
               spokenFrames={
                 scene.spokenDurationSeconds
                   ? secondsToFrames(scene.spokenDurationSeconds, fps)

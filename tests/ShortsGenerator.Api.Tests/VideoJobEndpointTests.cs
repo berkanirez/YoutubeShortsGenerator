@@ -310,6 +310,71 @@ public sealed class VideoJobEndpointTests : IClassFixture<WebApplicationFactory<
     }
 
     [Fact]
+    public async Task Retry_UnknownJob_Is404_AndAJobThatDidNotFail_Is409()
+    {
+        var client = _factory.CreateClient();
+        var created = await client.PostAsJsonAsync("/api/videos", new { topic = "Rest days", autoGenerate = false });
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.PostAsync($"/api/videos/{Guid.NewGuid()}/retry", null)).StatusCode);
+        var response = await client.PostAsync($"/api/videos/{id}/retry", null);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Contains("only failed jobs", await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Retry_AFailedJob_IsQueuedAgainWithItsErrorCleared()
+    {
+        var client = _factory.CreateClient();
+        var created = await client.PostAsJsonAsync("/api/videos", new { topic = "Rest days", autoGenerate = false });
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var repository = scope.ServiceProvider.GetRequiredService<IVideoJobRepository>();
+            var job = (await repository.GetByIdAsync(id, CancellationToken.None))!;
+            job.MarkFailed("Could not reach Ollama", DateTimeOffset.UtcNow);
+            await repository.UpdateAsync(job, CancellationToken.None);
+        }
+
+        var response = await client.PostAsync($"/api/videos/{id}/retry", null);
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("Created", body.GetProperty("status").GetString());
+        Assert.Equal(JsonValueKind.Null, body.GetProperty("errorMessage").ValueKind);
+        Assert.Equal(VideoJobWorkKind.Generate, (await _processor.WaitForAsync(id)).Kind);
+    }
+
+    [Fact]
+    public async Task ReviewState_UnknownJob404_UnfinishedJob409_WrongAnswerCount422()
+    {
+        var client = _factory.CreateClient();
+        var created = await client.PostAsJsonAsync("/api/videos", new { topic = "Rest days", autoGenerate = false });
+        var id = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
+        var allTicked = new { @checked = Enumerable.Repeat(true, ReviewChecklist.HumanChecks.Count) };
+
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/videos/{Guid.NewGuid()}/review-state")).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PutAsJsonAsync($"/api/videos/{id}/review-state", allTicked)).StatusCode);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var repository = scope.ServiceProvider.GetRequiredService<IVideoJobRepository>();
+            var job = (await repository.GetByIdAsync(id, CancellationToken.None))!;
+            job.MarkPlanning(DateTimeOffset.UtcNow);
+            job.MarkNarrating(DateTimeOffset.UtcNow);
+            job.MarkRendering(DateTimeOffset.UtcNow);
+            job.MarkCompleted("final.mp4", DateTimeOffset.UtcNow);
+            await repository.UpdateAsync(job, CancellationToken.None);
+        }
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity,
+            (await client.PutAsJsonAsync($"/api/videos/{id}/review-state", new { @checked = new[] { true } })).StatusCode);
+        var saved = await client.PutAsJsonAsync($"/api/videos/{id}/review-state", allTicked);
+        Assert.Equal(HttpStatusCode.OK, saved.StatusCode);
+        Assert.True((await saved.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("isReviewed").GetBoolean());
+    }
+
+    [Fact]
     public async Task EditSettings_ForAnUnknownJob_Is404()
     {
         var response = await _factory.CreateClient().PutAsJsonAsync(

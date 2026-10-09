@@ -92,6 +92,9 @@ $("#create-form").addEventListener("submit", async (event) => {
 // interrupted by a restart - and the Continue button resumes it.
 function statusLabel(job) {
   const terminal = job.status === "Completed" || job.status === "Failed";
+  if (job.status === "Completed" && job.isReviewed && !job.isRunning) {
+    return "Reviewed";
+  }
   if (terminal || job.isRunning) {
     return job.status;
   }
@@ -138,6 +141,60 @@ async function refreshJobs() {
   }
 }
 
+// ---- review sign-off (Day 28) ----------------------------------------------------------
+
+// The checklist from review.md as tick boxes. Every change is saved; once all are ticked the
+// video counts as reviewed - for this render only (a re-render makes the review stale).
+// Nothing is uploaded: publishing stays the user's own step.
+async function renderReviewChecks(job, detail) {
+  const state = await api(`/api/videos/${job.id}/review-state`);
+  const list = $('[data-field="review-checks"]', detail);
+  const verdict = $('[data-field="review-verdict"]', detail);
+  const show = (s) => {
+    verdict.textContent = s.stale
+      ? "The video was re-rendered after your review - check it again."
+      : s.items.every((i) => i.checked)
+        ? "Reviewed - ready for you to publish (the app never uploads)."
+        : `${s.items.filter((i) => i.checked).length} of ${s.items.length} checked.`;
+    const reviewed = s.items.every((i) => i.checked) && !s.stale;
+    verdict.className = reviewed ? "verdict ok" : "verdict";
+    // Updated in place - redrawing the detail would restart the video being reviewed.
+    const badge = $('[data-field="status"]', detail);
+    badge.textContent = reviewed ? "Reviewed" : "Completed";
+    badge.className = `badge ${badge.textContent}`;
+  };
+  list.replaceChildren(
+    ...state.items.map((item, index) => {
+      const label = document.createElement("label");
+      label.className = "inline check";
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = item.checked && !state.stale;
+      box.dataset.index = String(index);
+      const text = document.createElement("span");
+      text.textContent = item.text;
+      label.append(box, text);
+      box.addEventListener("change", async () => {
+        const checked = [...list.querySelectorAll("input")].map((b) => b.checked);
+        try {
+          show(await api(`/api/videos/${job.id}/review-state`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ checked }),
+          }));
+          // No forced redraw: it would restart the video the reviewer is watching. The list
+          // badge picks up isReviewed on its next poll.
+        } catch (error) {
+          box.checked = !box.checked;
+          alert(error.message);
+        }
+      });
+      return label;
+    }),
+  );
+  show(state);
+}
+
 // ---- detail --------------------------------------------------------------------------
 
 async function renderDetail(job) {
@@ -170,6 +227,7 @@ async function renderDetail(job) {
   if (job.errorMessage) {
     field("error").hidden = false;
     field("error").textContent = job.errorMessage;
+    field("log-hint").hidden = false;
   }
   field("outdated").hidden = !job.videoOutdated;
 
@@ -186,8 +244,11 @@ async function renderDetail(job) {
     continue: () => api(`/api/videos/${job.id}/generate`, { method: "POST" }),
     // apply-edits decides: plain re-render, or regenerate the voice-over first (Day 23).
     render: () => api(`/api/videos/${job.id}/apply-edits`, { method: "POST" }),
+    // Back to the last stage whose output is still valid, then queued (Day 26).
+    retry: () => api(`/api/videos/${job.id}/retry`, { method: "POST" }),
   };
   const terminal = job.status === "Completed" || job.status === "Failed";
+  $('[data-action="retry"]', view).hidden = job.status !== "Failed" || job.isQueued;
   $('[data-action="continue"]', view).hidden = terminal || job.isQueued || job.isRunning;
   $('[data-action="render"]', view).hidden =
     !(job.status === "Completed" || (job.status === "Narrating" && !job.isRunning)) || job.isQueued;
@@ -222,6 +283,9 @@ async function renderDetail(job) {
     const box = $('[data-field="review-box"]', detail);
     box.hidden = false;
     $('[data-field="review"]', detail).textContent = review;
+    if (job.status === "Completed") {
+      await renderReviewChecks(job, detail);
+    }
   } catch {
     /* no review yet */
   }

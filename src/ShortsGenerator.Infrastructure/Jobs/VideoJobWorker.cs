@@ -25,6 +25,9 @@ public sealed class VideoJobWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Jobs are work the user waits for: never in Windows' efficiency mode, even when the
+        // API's window is minimized (Day 29, see Processes/FullSpeed).
+        Processes.FullSpeed.ApplyToCurrentProcess();
         _logger.LogInformation("Video job worker started");
         while (!stoppingToken.IsCancellationRequested)
         {

@@ -63,16 +63,23 @@ try {
     15000,
   );
   console.log(`after ${Date.now() - submittedAt} ms: "${message}"`);
-  await waitFor("the new job in the list", (t) => document.querySelector("#jobs li.selected .topic")?.textContent === t, 15000, topic);
+  // The new job is the newest one; follow it by id. Matching by topic (as on Day 21) picked an
+  // older finished video with the same title on Day 30 and "finished" in 1 second.
+  const jobId = await page.evaluate(async () => (await (await fetch("/api/videos?take=1")).json())[0].id);
+  console.log(`job ${jobId}`);
+  await waitFor("the new job selected", () => document.querySelector("#jobs li:first-child")?.classList.contains("selected"), 15000);
   await shot("1-queued.png");
 
   const status = await waitFor(
     "Completed or Failed",
-    () => {
-      const badge = document.querySelector("#detail .detail-head .badge")?.textContent;
-      return badge === "Completed" || badge === "Failed" ? badge : null;
+    async (id) => {
+      const job = await (await fetch(`/api/videos/${id}`)).json();
+      const done = (job.status === "Completed" || job.status === "Failed") && !job.isRunning && !job.isQueued;
+      const shown = document.querySelector("#detail .detail-head .badge")?.textContent;
+      return done && ["Completed", "Failed", "Reviewed"].includes(shown) ? job.status : null;
     },
     300000,
+    jobId,
   );
   console.log(`job finished after ${Math.round((Date.now() - submittedAt) / 1000)} s: ${status}`);
   await waitFor("the video element to load", () => {

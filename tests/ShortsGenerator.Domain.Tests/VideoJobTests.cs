@@ -121,6 +121,81 @@ public class VideoJobTests
     }
 
     [Fact]
+    public void RecoverAfterInterruption_ARenderStartsOverFromNarrating_AndIsCounted()
+    {
+        var job = JobIn(VideoJobStatus.Rendering);
+        job.MarkQueued(VideoJobWorkKind.Render, Now);
+
+        Assert.True(job.RecoverAfterInterruption(Now));
+
+        Assert.Equal(VideoJobStatus.Narrating, job.Status);
+        Assert.Equal(1, job.InterruptionCount);
+        Assert.Equal(VideoJobWorkKind.Render, job.PendingWork);
+    }
+
+    [Fact]
+    public void RecoverAfterInterruption_GivesUpAfterTheLimit_AndFinishingWorkResetsTheCount()
+    {
+        var job = JobIn(VideoJobStatus.Planning);
+        job.MarkQueued(VideoJobWorkKind.Generate, Now);
+        Assert.True(job.RecoverAfterInterruption(Now));
+        job.MarkWorkFinished(Now);               // it got through once: the count starts over
+        job.MarkQueued(VideoJobWorkKind.Generate, Now);
+
+        for (var i = 0; i < VideoJob.MaxInterruptions; i++)
+        {
+            Assert.True(job.RecoverAfterInterruption(Now));
+        }
+
+        Assert.False(job.RecoverAfterInterruption(Now));
+        Assert.Equal(VideoJobStatus.Failed, job.Status);
+        Assert.Null(job.PendingWork);
+    }
+
+    [Fact]
+    public void RecoverAfterInterruption_ACompletedJobThatKeepsCrashing_StaysCompleted()
+    {
+        var job = JobIn(VideoJobStatus.Completed);
+        job.MarkQueued(VideoJobWorkKind.Render, Now);
+        for (var i = 0; i < VideoJob.MaxInterruptions; i++)
+        {
+            job.RecoverAfterInterruption(Now);
+        }
+
+        Assert.False(job.RecoverAfterInterruption(Now));
+        Assert.Equal(VideoJobStatus.Completed, job.Status);   // its earlier video is still fine
+        Assert.Null(job.PendingWork);
+    }
+
+    [Fact]
+    public void RecoverAfterInterruption_WithoutPendingWork_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() => JobIn(VideoJobStatus.Planning).RecoverAfterInterruption(Now));
+    }
+
+    [Theory]
+    [InlineData(VideoJobStatus.Created)]
+    [InlineData(VideoJobStatus.Planning)]
+    [InlineData(VideoJobStatus.Narrating)]
+    public void RetryFrom_PutsAFailedJobBack_AndClearsTheError(VideoJobStatus resumeAt)
+    {
+        var job = JobIn(VideoJobStatus.Failed);
+
+        job.RetryFrom(resumeAt, Now);
+
+        Assert.Equal(resumeAt, job.Status);
+        Assert.Null(job.ErrorMessage);
+    }
+
+    [Fact]
+    public void RetryFrom_OnlyFromFailed_AndNeverStraightToRenderingOrCompleted()
+    {
+        Assert.Throws<InvalidOperationException>(() => JobIn(VideoJobStatus.Completed).RetryFrom(VideoJobStatus.Narrating, Now));
+        Assert.Throws<ArgumentOutOfRangeException>(() => JobIn(VideoJobStatus.Failed).RetryFrom(VideoJobStatus.Completed, Now));
+        Assert.Throws<ArgumentOutOfRangeException>(() => JobIn(VideoJobStatus.Failed).RetryFrom(VideoJobStatus.Rendering, Now));
+    }
+
+    [Fact]
     public void HappyPath_MovesThroughAllStatusesInOrder()
     {
         var job = VideoJob.Create("Topic", null, Now);
