@@ -27,6 +27,8 @@ export type TemplateProps = {
   animation: AnimationResult;
   // Stable per plan (variant.ts); templates with layout variants pick from it.
   variantSeed: number;
+  // Storyboard shots: whether the camera may move (off when the plan's style is "static").
+  camera?: boolean;
 };
 
 const WALL_WIDTH = 940;

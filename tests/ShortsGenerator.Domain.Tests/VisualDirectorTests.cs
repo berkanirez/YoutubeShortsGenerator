@@ -75,3 +75,38 @@ public class VisualDirectorTests
         Assert.Equal(a.Variant, b.Variant);
     }
 }
+
+public class VisualDirectorStoryboardTests
+{
+    private static readonly string[] Catalog = ["mascot-stop", "mascot-crossed-arms", "mascot-pointing", "mascot-idea", "mascot-shocked", "mascot-facepalm", "mascot-flex"];
+
+    private static VideoPlan Countdown(bool withWrongArt) => new("T", "H", 30, "n",
+    [
+        new("s1", 1, SceneType.Hook, 3, "hook", null, [], AnimationId.Fade, null, null, null, Shot: ShotType.HookStop,
+            AltAssetIds: withWrongArt ? ["pushup-hips-sag", "pushup-top"] : null),
+        new("s2", 2, SceneType.MythVsFact, 3, "number three", null, [], AnimationId.Fade, null, null, null, Shot: ShotType.MistakeReaction),
+        new("s3", 3, SceneType.Outro, 3, "cta", null, [], AnimationId.Fade, null, null, null, Shot: ShotType.CtaLoop),
+    ], null, null, null);
+
+    [Fact]
+    public void TheCountdownHookShot_RotatesAcrossVideos()
+    {
+        var made = new List<VideoPlan>();
+        for (var i = 0; i < 3; i++)
+        {
+            made.Insert(0, VisualDirector.Direct(Countdown(false), made, Catalog, seed: 1));
+        }
+
+        Assert.Equal(3, made.Select(p => p.Scenes[0].Shot).Distinct().Count());
+        Assert.DoesNotContain(made, p => p.Scenes[0].Shot == ShotType.HookQuestion);   // no wrong-form art: no "which one?"
+    }
+
+    [Fact]
+    public void ShotsGetExpressionsThatFitThem()
+    {
+        var directed = VisualDirector.Direct(Countdown(false), [], Catalog, seed: 0);
+
+        Assert.Contains(directed.Scenes[1].AssetIds.Single(), new[] { "mascot-facepalm", "mascot-stop", "mascot-shocked" });
+        Assert.Equal("mascot-pointing", directed.Scenes[2].AssetIds.Single());
+    }
+}

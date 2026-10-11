@@ -5,9 +5,11 @@ import {
   PLACEHOLDER_PLAN,
   ShortComposition,
 } from "./compositions/ShortComposition";
+import { calculateCoverMetadata, ShortCover } from "./compositions/ShortCover";
 
 export const RemotionRoot: React.FC = () => {
   return (
+    <>
     <Composition
       id="ShortComposition"
       component={ShortComposition}
@@ -25,5 +27,22 @@ export const RemotionRoot: React.FC = () => {
       }}
       calculateMetadata={calculateMetadata}
     />
+    {/* The thumbnail (cover.png), rendered as a still after the video. */}
+    <Composition
+      id="ShortCover"
+      component={ShortCover}
+      durationInFrames={1}
+      fps={30}
+      width={1080}
+      height={1920}
+      defaultProps={{
+        planPath: "samples/sample-plan.json",
+        narrationPath: null,
+        plan: PLACEHOLDER_PLAN,
+        assetSvgById: {},
+      }}
+      calculateMetadata={calculateCoverMetadata}
+    />
+    </>
   );
 };

@@ -40,6 +40,9 @@ public static class ArtSheetPlanner
         AddChunks(missing.Where(s => s.Kind == ArtKind.MascotPose).ToList(), MaxCharactersPerSheet, c => (1, c.Count), CharacterSheet);
         AddChunks(missing.Where(s => s.Kind == ArtKind.Muscle).ToList(), MaxCharactersPerSheet, c => (1, c.Count), CharacterSheet);
         AddChunks(missing.Where(s => s.Kind == ArtKind.Exercise).ToList(), MaxCharactersPerSheet, c => c.Count == 4 ? (2, 2) : (1, c.Count), CharacterSheet);
+        // Wrong-form pictures, grouped by exercise (subjects.json lists them that way) so one
+        // sheet keeps one camera angle.
+        AddChunks(missing.Where(s => s.Kind == ArtKind.Mistake).ToList(), MaxCharactersPerSheet, c => c.Count == 4 ? (2, 2) : (1, c.Count), CharacterSheet);
         AddChunks(
             missing.Where(s => s.Kind is ArtKind.Equipment or ArtKind.Icon).ToList(),
             MaxIconsPerSheet,
@@ -48,6 +51,8 @@ public static class ArtSheetPlanner
         // Two exercise pairs per image, one per row; each row is cut out and then split into
         // its two poses like a single pair image.
         AddChunks(missing.Where(s => s.Kind == ArtKind.ExercisePair).ToList(), 2, c => (c.Count, 1), PairSheet);
+        // An animation is a sheet of its own frames already.
+        singles.AddRange(missing.Where(s => s.Kind == ArtKind.Cycle));
         return (sheets, singles);
     }
 
@@ -110,6 +115,8 @@ public static class ArtSheetPlanner
             (subject.BackView ? "BACK view (seen from behind)" : "front view") +
             $", standing relaxed, arms slightly away from the body; the {subject.Describe} colored solid bright red (#EF4444) " +
             "like an anatomy highlight, everything else in his normal colors",
+        ArtKind.Mistake =>
+            $"{subject.Describe} - the WRONG technique on purpose, the mistake clearly visible and slightly exaggerated, strained face",
         _ => subject.Describe,
     };
 

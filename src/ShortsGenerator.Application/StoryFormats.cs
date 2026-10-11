@@ -32,8 +32,8 @@ public static partial class StoryFormats
     // same format and different topics spread across the general-purpose ones.
     public static StoryFormat Pick(string topic) => Pick(topic, []);
 
-    /// <param name="recentScripts">The latest videos' narrations, most recent first.</param>
-    public static StoryFormat Pick(string topic, IReadOnlyList<string> recentScripts)
+    /// <summary>The shape the topic itself asks for, or null for a general topic.</summary>
+    public static StoryFormat? Explicit(string topic)
     {
         var t = topic.ToLowerInvariant();
         if (LevelsWords().IsMatch(t))
@@ -51,9 +51,16 @@ public static partial class StoryFormats
             return StoryFormat.Countdown;
         }
 
-        if (MythWords().IsMatch(t))
+        return MythWords().IsMatch(t) ? StoryFormat.MythStory : null;
+    }
+
+    /// <param name="recentScripts">The latest videos' narrations, most recent first.</param>
+    public static StoryFormat Pick(string topic, IReadOnlyList<string> recentScripts)
+    {
+        var t = topic.ToLowerInvariant();
+        if (Explicit(topic) is { } asked)
         {
-            return StoryFormat.MythStory;
+            return asked;
         }
 
         // Topics that don't call for a shape get the general format used least recently, so
@@ -108,7 +115,7 @@ public static partial class StoryFormats
             "Tell it as a mini story about one guy who trains (\"this guy\" or \"he\" - no name): what he kept doing, " +
             "how stuck he felt, the one thing he changed, what happened after - then turn to the viewer. The lesson must be accurate.",
         StoryFormat.Countdown =>
-            "Count down three things - number three, number two, number one - saving the most surprising for number one, " +
+            "Go through three things - number one, number two, number three - saving the most surprising for number three, " +
             "and tease it in the second sentence. Each thing gets two short sentences: the mistake, then the fix.",
         StoryFormat.InsideTheBody =>
             "Walk through what happens inside the body in time order - the first seconds, the hours after, the days after - " +

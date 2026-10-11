@@ -163,14 +163,34 @@ public sealed class ArtRequestService
 
         var catalog = await _assets.GetAllAsync(cancellationToken);
         var directed = VisualDirector.Direct(plan, earlier, catalog.Select(a => a.Id).ToList(), jobId.GetHashCode() & int.MaxValue);
-        return directed with { ArtChecked = true };
+        var stillWanted = plan.WantedArt?.Where(id => !catalog.Any(a => string.Equals(a.Id, id, StringComparison.OrdinalIgnoreCase))).ToList();
+        return directed with { ArtChecked = true, WantedArt = stillWanted };
     }
 
     private async Task<ArtCheck> CheckAsync(VideoPlan plan, CancellationToken cancellationToken)
     {
-        var catalog = await _assets.GetAllAsync(cancellationToken);
+        var catalog = (await _assets.GetAllAsync(cancellationToken)).Select(a => a.Id).ToList();
         var subjects = await _subjects.GetAllAsync(cancellationToken);
-        return ArtGapDetector.Check(plan.Scenes, catalog.Select(a => a.Id).ToList(), subjects);
+        if (plan.Storyboard is null)
+        {
+            return ArtGapDetector.Check(plan.Scenes, catalog, subjects, lifestyle: TopicBriefs.Find(plan.Title) is not null);
+        }
+
+        // A storyboard video is composed again against today's catalog (a wrong-form picture
+        // that arrived turns a MistakeReaction into a SplitFix); what it still lacks is asked for.
+        var byId = subjects.ToDictionary(s => s.Id, StringComparer.OrdinalIgnoreCase);
+        var composed = StoryboardComposer.Compose(plan.Storyboard, catalog, byId);
+        var problemScenes = composed.Scenes.Where(s => s.Shot is ShotType.MistakeReaction or ShotType.SplitFix).ToList();
+        var requests = composed.WantedArt
+            .Select(id => byId[id])
+            .Select(subject =>
+            {
+                var index = plan.Storyboard.Items.ToList().FindIndex(i => string.Equals(i.Subject, subject.Id, StringComparison.OrdinalIgnoreCase));
+                IReadOnlyList<string> sceneIds = index >= 0 && index < problemScenes.Count ? [problemScenes[index].Id] : [];
+                return new ArtRequest(subject, sceneIds, ArtPromptBuilder.Build(subject));
+            })
+            .ToList();
+        return new ArtCheck(composed.Scenes, requests);
     }
 
     private Task WriteRequestsAsync(VideoJob job, IReadOnlyList<ArtRequest> requests, CancellationToken cancellationToken) =>

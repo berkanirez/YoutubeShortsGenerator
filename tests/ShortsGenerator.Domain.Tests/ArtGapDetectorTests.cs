@@ -168,3 +168,36 @@ public class ArtGapDetectorRepetitionTests
         Assert.Empty(check.Scenes[3].AssetIds);                                           // over the limit: back to the mascot
     }
 }
+
+public class ArtGapDetectorLifestyleTests
+{
+    private static readonly ArtSubject[] Subjects =
+    [
+        new("squat", ArtKind.ExercisePair, ["squats", "squat"], "squat", Top: "u", Bottom: "d"),
+        new("walking", ArtKind.Exercise, ["walking", "walk"], "walking"),
+        new("protein-shake", ArtKind.Icon, ["protein shake", "protein"], "a shake"),
+        new("sleep", ArtKind.Icon, ["sleep"], "moon"),
+    ];
+
+    private static Scene S(int order, SceneType type, string narration, params string[] assets) =>
+        new($"s{order}", order, type, 4, narration, null, assets, AnimationId.Pop, null, null, null);
+
+    [Fact]
+    public void AFatLossVideo_ShowsWhatEachSentenceNames_AndDropsUnnamedExercises()
+    {
+        IReadOnlyList<Scene> scenes =
+        [
+            S(1, SceneType.Hook, "Are you really losing fat?", "squat-bottom"),
+            S(2, SceneType.ExerciseDemo, "Eat protein at every meal.", "squat-top"),
+            S(3, SceneType.AnatomyHighlight, "Take a walk every single day.", "squat-bottom"),
+            S(4, SceneType.Progress, "Squats help you keep your muscle.", "squat-top"),
+        ];
+
+        var check = ArtGapDetector.Check(scenes, ["squat-top", "squat-bottom", "walking", "protein-shake", "sleep"], Subjects, lifestyle: true);
+
+        Assert.Empty(check.Scenes[0].AssetIds);                    // hook: unnamed squat -> mascot
+        Assert.Equal(["protein-shake"], check.Scenes[1].AssetIds);
+        Assert.Equal(["walking"], check.Scenes[2].AssetIds);
+        Assert.Equal(["squat-top"], check.Scenes[3].AssetIds);     // named: kept
+    }
+}

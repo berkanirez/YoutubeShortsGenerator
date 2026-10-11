@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using ShortsGenerator.Domain;
@@ -271,5 +271,25 @@ public sealed class KokoroTtsProviderTests : IDisposable
         var path = Path.Combine(_directory, fileName);
         File.WriteAllText(path, string.Empty);
         return path;
+    }
+
+    [Fact]
+    public async Task WithTheScenes_TheSegmentsAreSentAsPartsWithPauses()
+    {
+        const string json = """{"durationSeconds": 4.3, "sampleRate": 24000, "voice": "af_heart", "segments": [{"startSeconds": 0, "durationSeconds": 2.0}, {"startSeconds": 2.3, "durationSeconds": 1.7}]}""";
+        var runner = Succeeding(json, wavSeconds: 4.3);
+        Scene[] scenes =
+        [
+            new("s1", 1, SceneType.Hook, 2, "Your squats hurt your knees.", null, [], AnimationId.Fade, null, null, null),
+            new("s2", 2, SceneType.List, 2, "Number one: Your heels lift.", null, [], AnimationId.Fade, null, null, null),
+        ];
+
+        await CreateProvider(runner).SynthesizeAsync(
+            new TtsRequest([scenes[0].Narration!, scenes[1].Narration!], OutputPath, Scenes: scenes), CancellationToken.None);
+
+        using var stdin = System.Text.Json.JsonDocument.Parse(Assert.Single(runner.Calls).StandardInput!);
+        var segments = stdin.RootElement.GetProperty("segments").EnumerateArray().ToList();
+        Assert.Equal(0.55, segments[0].GetProperty("pauseAfter").GetDouble());
+        Assert.Equal("Number one.", segments[1].GetProperty("parts")[0].GetProperty("text").GetString());
     }
 }

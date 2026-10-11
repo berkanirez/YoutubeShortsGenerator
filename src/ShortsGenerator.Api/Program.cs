@@ -29,6 +29,7 @@ builder.Services.AddScoped<NarrationService>();
 builder.Services.AddScoped<RenderService>();
 builder.Services.AddScoped<PlanEditService>();
 builder.Services.AddScoped<ArtRequestService>();
+builder.Services.AddScoped<StoryboardService>();
 builder.Services.AddVideoJobQueue();
 
 var app = builder.Build();

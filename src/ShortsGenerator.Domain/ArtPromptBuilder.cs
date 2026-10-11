@@ -12,7 +12,7 @@ public static class ArtPromptBuilder
         "compression sleeve on his RIGHT knee, barefoot.";
 
     public static bool NeedsReferenceImage(ArtSubject subject) =>
-        subject.Kind is ArtKind.Muscle or ArtKind.ExercisePair or ArtKind.Exercise or ArtKind.MascotPose;
+        subject.Kind is ArtKind.Muscle or ArtKind.ExercisePair or ArtKind.Exercise or ArtKind.MascotPose or ArtKind.Mistake or ArtKind.Cycle;
 
     public static string Build(ArtSubject subject) => subject.Kind switch
     {
@@ -29,6 +29,24 @@ public static class ArtPromptBuilder
             $"Pose: {subject.Describe}.\n" +
             "Square image. Pure flat white background, no floor line, no shadows, no text, no letters, no arrows, " +
             "no icons. Full body visible, nothing cut off.",
+        ArtKind.Cycle =>
+            $"{Character}\n" +
+            "Make one square image divided into a 2x2 grid of four equal panels with plenty of white space between them, like an " +
+            $"animation sprite sheet. The SAME character, SAME size, SAME camera in every panel - {subject.Camera ?? "same side-view camera, feet at exactly the same spot in every panel"} - " +
+            $"four frames of one smooth {subject.Describe}:\n" +
+            $"Top-left (frame 1): {subject.Top}.\n" +
+            "Top-right (frame 2): a third of the way from frame 1 to frame 4.\n" +
+            "Bottom-left (frame 3): two thirds of the way from frame 1 to frame 4.\n" +
+            $"Bottom-right (frame 4): {subject.Bottom}.\n" +
+            "Pure flat white background, no grid lines, no borders, no floor line, no shadows, no text, no numbers. " +
+            "Full body visible in every panel, nothing cut off.",
+        ArtKind.Mistake =>
+            $"{Character}\n" +
+            $"Pose: {subject.Describe}.\n" +
+            "This picture shows the WRONG technique on purpose: the mistake must be clearly visible and exaggerated a little, " +
+            "with a strained face. Same camera angle as a normal exercise illustration of this movement.\n" +
+            "Square image. Pure flat white background, no floor line, no shadows, no text, no letters, no arrows, " +
+            "no icons, no red marks. Full body visible, nothing cut off.",
         ArtKind.Muscle =>
             $"{Character}\n" +
             (subject.BackView

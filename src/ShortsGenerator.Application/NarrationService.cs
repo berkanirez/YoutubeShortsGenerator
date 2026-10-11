@@ -65,17 +65,17 @@ public sealed class NarrationService
         // One segment per narrated scene, in scene order. Together they are exactly the
         // plan's NarrationText (VideoPlanValidator guarantees it), but split at the scene
         // boundaries so the audio can tell us where each scene's speech starts.
-        var segments = plan.Scenes
+        var narratedScenes = plan.Scenes
             .OrderBy(s => s.Order)
             .Where(s => !string.IsNullOrWhiteSpace(s.Narration))
-            .Select(s => s.Narration!)
             .ToList();
+        var segments = narratedScenes.Select(s => s.Narration!).ToList();
 
         var outputPath = Path.Combine(_outputLocator.GetJobDirectory(jobId), NarrationFileName);
         TtsResult audio;
         try
         {
-            audio = await _ttsProvider.SynthesizeAsync(new TtsRequest(segments, outputPath), cancellationToken);
+            audio = await _ttsProvider.SynthesizeAsync(new TtsRequest(segments, outputPath, Scenes: narratedScenes), cancellationToken);
         }
         catch (Exception ex) when (ex is TtsUnavailableException or TtsGenerationException)
         {

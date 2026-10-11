@@ -4,6 +4,10 @@ Contract with the .NET side (KokoroTtsProvider):
   * input arrives on stdin as UTF-8 JSON, never as command-line arguments, so
     quotes/newlines/odd characters in narration can't break argument parsing:
         {"segments": ["First scene's narration.", "Second scene's narration."]}
+    A segment may instead be spoken in parts - each with its own speed, loudness and the
+    silence after it - which is how the delivery gets pauses and emphasis (SpeechDelivery):
+        {"segments": [{"parts": [{"text": "Number one.", "speed": 0.9, "pauseAfter": 0.3},
+                                 {"text": "Your hips sag.", "gain": 1.0}], "pauseAfter": 0.35}]}
   * each segment is synthesized separately and the clips are joined with
     --pause seconds of silence after each one, so the caller learns exactly
     where every segment (= every scene) starts and ends in the final audio;
@@ -44,7 +48,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def read_segments() -> list[str]:
+def read_segments() -> list[dict]:
     # utf-8-sig: some callers (e.g. Windows PowerShell pipes) prepend a BOM.
     raw = sys.stdin.buffer.read().decode("utf-8-sig").strip()
     if not raw:
@@ -57,9 +61,30 @@ def read_segments() -> list[str]:
     segments = payload.get("segments") if isinstance(payload, dict) else None
     if not isinstance(segments, list) or not segments:
         fail(EXIT_BAD_INPUT, "stdin JSON must be an object with a non-empty 'segments' array.")
-    if not all(isinstance(text, str) and text.strip() for text in segments):
-        fail(EXIT_BAD_INPUT, "Every segment must be a non-empty string.")
-    return [text.strip() for text in segments]
+
+    normalized = []
+    for segment in segments:
+        if isinstance(segment, str):
+            segment = {"parts": [{"text": segment}]}
+        parts = segment.get("parts") if isinstance(segment, dict) else None
+        if not isinstance(parts, list) or not parts:
+            fail(EXIT_BAD_INPUT, "Every segment must be a non-empty string or an object with a non-empty 'parts' array.")
+        clean = []
+        for part in parts:
+            text = part.get("text") if isinstance(part, dict) else None
+            if not isinstance(text, str) or not text.strip():
+                fail(EXIT_BAD_INPUT, "Every part needs a non-empty 'text'.")
+            speed = float(part.get("speed", 1.0))
+            gain = float(part.get("gain", 1.0))
+            pause = float(part.get("pauseAfter", 0.0))
+            if not 0.5 <= speed <= 1.5 or not 0.5 <= gain <= 2.0 or not 0.0 <= pause <= 2.0:
+                fail(EXIT_BAD_INPUT, "Part speed must be 0.5-1.5, gain 0.5-2.0, pauseAfter 0-2.")
+            clean.append({"text": text.strip(), "speed": speed, "gain": gain, "pauseAfter": pause})
+        pause_after = segment.get("pauseAfter")
+        if pause_after is not None and not 0.0 <= float(pause_after) <= 2.0:
+            fail(EXIT_BAD_INPUT, "Segment pauseAfter must be 0-2.")
+        normalized.append({"parts": clean, "pauseAfter": None if pause_after is None else float(pause_after)})
+    return normalized
 
 
 def main() -> None:
@@ -91,16 +116,30 @@ def main() -> None:
         timings = []
         sample_rate = None
         cursor = 0
-        for text in segments:
-            samples, rate = kokoro.create(text, voice=args.voice, speed=args.speed, lang=args.lang)
-            sample_rate = sample_rate or rate
-            pause = np.zeros(int(round(args.pause * rate)), dtype=samples.dtype)
+        for segment in segments:
+            start = cursor
+            spoken_end = cursor
+            for index, part in enumerate(segment["parts"]):
+                samples, rate = kokoro.create(part["text"], voice=args.voice, speed=args.speed * part["speed"], lang=args.lang)
+                sample_rate = sample_rate or rate
+                if part["gain"] != 1.0:
+                    samples = np.clip(samples * part["gain"], -1.0, 1.0).astype(samples.dtype)
+                clips.append(samples)
+                cursor += len(samples)
+                spoken_end = cursor
+                # The silence after the last part is the segment's pause, below.
+                if index < len(segment["parts"]) - 1 and part["pauseAfter"] > 0:
+                    gap = np.zeros(int(round(part["pauseAfter"] * rate)), dtype=samples.dtype)
+                    clips.append(gap)
+                    cursor += len(gap)
+            pause_seconds = args.pause if segment["pauseAfter"] is None else segment["pauseAfter"]
+            pause = np.zeros(int(round(pause_seconds * sample_rate)), dtype=clips[-1].dtype)
             timings.append({
-                "startSeconds": round(cursor / rate, 4),
-                "durationSeconds": round(len(samples) / rate, 4),
+                "startSeconds": round(start / sample_rate, 4),
+                "durationSeconds": round((spoken_end - start) / sample_rate, 4),
             })
-            clips.extend([samples, pause])
-            cursor += len(samples) + len(pause)
+            clips.append(pause)
+            cursor += len(pause)
     except SystemExit:
         raise
     except Exception as error:  # the engine's own exceptions are not a stable API

@@ -13,6 +13,7 @@ export type SceneRendererProps = {
   assetSvgById: Record<string, string>;
   captionStyle: CaptionStyle;
   variantSeed: number;
+  camera?: boolean;
 };
 
 // Deterministic scene order/timing (CLAUDE.md Day 8 "Do"): scenes are sorted
@@ -24,6 +25,7 @@ export const SceneRenderer: React.FC<SceneRendererProps> = ({
   assetSvgById,
   captionStyle,
   variantSeed,
+  camera = true,
 }) => {
   const { fps } = useVideoConfig();
   const timeline = videoTimeline(scenes, fps);
@@ -41,6 +43,7 @@ export const SceneRenderer: React.FC<SceneRendererProps> = ({
               assetSvgById={assetSvgById}
               durationInFrames={durationInFrames}
               variantSeed={variantSeed}
+              camera={camera}
             />
             {/* A sibling layer, not inside SceneView's animated content group:
                 a scene's shake/slide must never move the captions. Living in

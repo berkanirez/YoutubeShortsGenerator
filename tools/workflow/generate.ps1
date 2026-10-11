@@ -1,6 +1,7 @@
 ﻿# Day 28: make one Short from the command line.
 #   generate.cmd "Why Your Pull-Ups Aren't Increasing"
-#   generate.cmd "Rest days" -ScriptFile my-script.txt     use your own narration (65-140 words)
+#   generate.cmd "Rest days" -ScriptFile my-script.txt     use your own narration (65-140 words), or a
+#                                                          storyboard script (FORMAT: ..., docs/CHATGPT_SCRIPT_PROMPT.md)
 #   generate.cmd "Rest days" -NoOpen                       don't open the folder at the end
 # If the video needs pictures the catalog doesn't have, it stops and prints a ready prompt for
 # each; add the images (dashboard upload, or assets/incoming/) and run continue.cmd <job-id>.
@@ -30,7 +31,9 @@ if (-not (Test-ApiUp)) {
 }
 
 $body = @{ topic = $Topic }
-if ($ScriptFile) { $body.sourceScript = Get-Content -Raw -Encoding UTF8 $ScriptFile }
+# [IO.File], not Get-Content -Raw: in Windows PowerShell 5.1 that string carries PSPath etc. and
+# ConvertTo-Json writes it as an object ({"value": ...}) - the API rejected every -ScriptFile.
+if ($ScriptFile) { $body.sourceScript = [IO.File]::ReadAllText((Resolve-Path $ScriptFile), [Text.Encoding]::UTF8) }
 try {
     $job = Invoke-RestMethod -Method Post "$script:ApiUrl/api/videos" -ContentType "application/json; charset=utf-8" `
         -Body ([Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json)))

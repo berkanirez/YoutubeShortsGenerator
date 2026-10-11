@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
-import { FLOOR_Y, FRAME_WIDTH } from "./layout";
+import { FRAME_WIDTH } from "./layout";
 import type { ScenePalette } from "./theme";
 
 // How long the new scene's background takes to sweep over the previous one.
@@ -10,27 +10,23 @@ export const REVEAL_FRAMES = 10;
 const SLANT = 300;
 const FRAME_HEIGHT = 1920;
 
-// A flat gym wall with one static diagonal stripe, and the floor the characters stand on:
-// a darker band with a lighter front edge at FLOOR_Y. Nothing drifts or glows (the earlier
-// gradient + moving glow blobs read as a tech/AI channel). `seed` mirrors the stripe on odd
-// scenes so consecutive scenes don't look identical.
+// A flat gym wall with one static diagonal stripe. No drawn floor any more (the owner asked
+// to remove it): the characters still stand on the same invisible line (layout.ts FLOOR_Y).
+// Nothing drifts or glows (the earlier gradient + moving glow blobs read as a tech/AI
+// channel). `seed` mirrors the stripe on odd scenes so consecutive scenes don't look identical.
 const Layer: React.FC<{ palette: ScenePalette; seed: number }> = ({ palette, seed }) => (
   <AbsoluteFill style={{ backgroundColor: palette.background, overflow: "hidden" }}>
-    <div style={{ position: "absolute", left: 0, top: 0, width: FRAME_WIDTH, height: FLOOR_Y, overflow: "hidden" }}>
-      <div
-        style={{
-          position: "absolute",
-          width: 2600,
-          height: 300,
-          left: -760,
-          top: 1150,
-          backgroundColor: palette.stripe,
-          transform: `rotate(${seed % 2 === 0 ? -14 : 14}deg)`,
-        }}
-      />
-    </div>
-    <div style={{ position: "absolute", left: 0, right: 0, top: FLOOR_Y, bottom: 0, backgroundColor: palette.floor }} />
-    <div style={{ position: "absolute", left: 0, right: 0, top: FLOOR_Y - 3, height: 6, backgroundColor: palette.floorEdge }} />
+    <div
+      style={{
+        position: "absolute",
+        width: 2600,
+        height: 300,
+        left: -760,
+        top: 1150,
+        backgroundColor: palette.stripe,
+        transform: `rotate(${seed % 2 === 0 ? -14 : 14}deg)`,
+      }}
+    />
   </AbsoluteFill>
 );
 

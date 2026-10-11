@@ -79,6 +79,12 @@ public sealed class ScriptGenerationService
     // generated one - a script the user wrote isn't exempt from the medical-claims check.
     private static string UseSourceScript(string sourceScript)
     {
+        if (StoryboardScript.IsStructured(sourceScript))
+        {
+            throw new ScriptGenerationException(
+                "This is a storyboard script (FORMAT: ...); it is turned into scenes by Generate, not by the script step.");
+        }
+
         var cleaned = ScriptTextCleaner.Clean(sourceScript);
         var validation = ScriptValidator.Validate(cleaned);
         if (!validation.IsValid)
@@ -101,7 +107,7 @@ public sealed class ScriptGenerationService
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
-            var prompt = ScriptPromptBuilder.Build(topic, failureReasons, format);
+            var prompt = ScriptPromptBuilder.Build(topic, failureReasons, format, TopicBriefs.Find(topic));
             var raw = await _llmProvider.GenerateAsync(prompt, cancellationToken);
             var cleaned = ScriptTextCleaner.Clean(raw);
             var validation = ScriptValidator.Validate(cleaned);

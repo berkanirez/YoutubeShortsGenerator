@@ -36,6 +36,24 @@ export const SfxIdSchema = z.enum([
   "success",
   "impact",
   "click",
+  "levelUp",
+]);
+
+// Storyboard shots (ShortsGenerator.Domain.ShotType, camelCase on the wire).
+export const ShotTypeSchema = z.enum([
+  "hookStop",
+  "hookNumber",
+  "hookShock",
+  "hookQuestion",
+  "kineticWord",
+  "splitFix",
+  "mistakeReaction",
+  "fixDemo",
+  "zoomDetail",
+  "lineup",
+  "levelShow",
+  "payoff",
+  "ctaLoop",
 ]);
 
 // Matches ShortsGenerator.Domain.Scene exactly, field for field.
@@ -58,6 +76,15 @@ export const SceneSchema = z.object({
   // plans don't have them, and every template falls back gracefully without.
   secondaryText: z.string().nullable().optional(),
   items: z.array(z.string()).max(3).nullable().optional(),
+  // Storyboard scenes (StoryboardComposer). Optional: classic plans don't have them.
+  shot: ShotTypeSchema.nullable().optional(),
+  altAssetIds: z.array(z.string()).nullable().optional(),
+  focusPoint: z.array(z.number()).length(2).nullable().optional(),
+  arrow: z.enum(["up", "down", "in", "out"]).nullable().optional(),
+  count: z.number().int().nullable().optional(),
+  total: z.number().int().nullable().optional(),
+  goalValue: z.number().int().nullable().optional(),
+  goalUnit: z.enum(["seconds", "reps"]).nullable().optional(),
 });
 
 // The only frame rate this project renders at (Root.tsx, Domain.VideoFormat).
@@ -155,6 +182,7 @@ function formatPath(path: readonly PropertyKey[]): string {
 }
 
 export type SceneType = z.infer<typeof SceneTypeSchema>;
+export type ShotType = z.infer<typeof ShotTypeSchema>;
 export type AnimationId = z.infer<typeof AnimationIdSchema>;
 export type SfxId = z.infer<typeof SfxIdSchema>;
 export type Scene = z.infer<typeof SceneSchema>;

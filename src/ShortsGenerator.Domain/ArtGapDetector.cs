@@ -34,8 +34,22 @@ public static partial class ArtGapDetector
     // Scenes that are *about* the subject get its picture first.
     private static bool IsPrimary(SceneType type) => type is SceneType.ExerciseDemo or SceneType.AnatomyHighlight;
 
-    public static ArtCheck Check(IReadOnlyList<Scene> scenes, IReadOnlyCollection<string> catalogIds, IReadOnlyList<ArtSubject> subjects)
+    // Topics about the body or lifestyle (fat loss, sleep, nutrition): any middle scene may show
+    // an icon, equipment or a single exercise its words name.
+    private static readonly ArtKind[] LifestyleKinds = [ArtKind.Icon, ArtKind.Equipment, ArtKind.Exercise, ArtKind.Muscle];
+
+    /// <param name="lifestyle">
+    /// The topic is not about exercise technique (TopicBriefs). Then a scene's picture must come
+    /// from its own words; an exercise drawing its words don't name is removed (the mascot shows) -
+    /// a fat-loss video once showed squats and bench presses behind "calorie deficit".
+    /// </param>
+    public static ArtCheck Check(IReadOnlyList<Scene> scenes, IReadOnlyCollection<string> catalogIds, IReadOnlyList<ArtSubject> subjects, bool lifestyle = false)
     {
+        if (lifestyle)
+        {
+            scenes = scenes.Select(s => DropUnnamedExercise(s, subjects)).ToList();
+        }
+
         var inCatalog = new HashSet<string>(catalogIds, StringComparer.OrdinalIgnoreCase);
         var updated = new List<Scene>(scenes.Count);
         var missing = new Dictionary<string, (ArtSubject Subject, List<string> SceneIds)>();
@@ -43,7 +57,9 @@ public static partial class ArtGapDetector
 
         foreach (var scene in scenes.OrderByDescending(s => IsPrimary(s.Type)).ThenBy(s => s.Order))
         {
-            var subject = FindSubject(scene, subjects);
+            // Storyboard scenes choose their own pictures (StoryboardComposer) and name what they
+            // lack in the plan's WantedArt; matching their words would undo that.
+            var subject = scene.Shot is null ? FindSubject(scene, subjects, lifestyle) : null;
             if (subject is null)
             {
                 updated.Add(scene);
@@ -92,9 +108,25 @@ public static partial class ArtGapDetector
     /// picture that fit the scene type. At the same position the longer term wins
     /// ("pull-up bar" over "pull-up").
     /// </summary>
-    public static ArtSubject? FindSubject(Scene scene, IReadOnlyList<ArtSubject> subjects)
+    private static Scene DropUnnamedExercise(Scene scene, IReadOnlyList<ArtSubject> subjects)
     {
-        if (!KindsBySceneType.TryGetValue(scene.Type, out var kinds))
+        var current = scene.AssetIds.FirstOrDefault();
+        var owner = current is null ? null : subjects.FirstOrDefault(s => s.AssetIds.Contains(current, StringComparer.OrdinalIgnoreCase));
+        if (owner is null || owner.Kind is not (ArtKind.ExercisePair or ArtKind.Exercise or ArtKind.Mistake))
+        {
+            return scene;
+        }
+
+        var text = Normalize($"{scene.OnScreenText} {scene.Emphasis} {scene.Narration}");
+        return owner.Terms.Any(t => IndexOfWord(text, Normalize(t)) >= 0) ? scene : scene with { AssetIds = [] };
+    }
+
+    public static ArtSubject? FindSubject(Scene scene, IReadOnlyList<ArtSubject> subjects, bool lifestyle = false)
+    {
+        ArtKind[]? kinds = lifestyle && scene.Type is not (SceneType.Hook or SceneType.Outro)
+            ? LifestyleKinds
+            : KindsBySceneType.GetValueOrDefault(scene.Type);
+        if (kinds is null)
         {
             return null;
         }

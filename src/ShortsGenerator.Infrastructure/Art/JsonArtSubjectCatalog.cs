@@ -74,9 +74,28 @@ public sealed partial class JsonArtSubjectCatalog : IArtSubjectCatalog
                 problems.Add($"'{subject.Id}': a MascotPose id starts with 'mascot-'");
             }
 
+            if (subject.Kind == ArtKind.Cycle && (string.IsNullOrWhiteSpace(subject.Top) || string.IsNullOrWhiteSpace(subject.Bottom)))
+            {
+                problems.Add($"'{subject.Id}': a Cycle needs top (frame 1) and bottom (frame 4)");
+            }
+
             if (subject.Kind == ArtKind.ExercisePair && (string.IsNullOrWhiteSpace(subject.Top) || string.IsNullOrWhiteSpace(subject.Bottom)))
             {
                 problems.Add($"'{subject.Id}': an ExercisePair needs top and bottom poses");
+            }
+        }
+
+        var ids = (subjects ?? []).Select(s => s.Id).ToHashSet(StringComparer.Ordinal);
+        foreach (var mistake in (subjects ?? []).Where(s => s.Kind == ArtKind.Mistake))
+        {
+            if (mistake.Exercise is null || !ids.Contains(mistake.Exercise))
+            {
+                problems.Add($"'{mistake.Id}': a Mistake needs an existing exercise subject (got '{mistake.Exercise}')");
+            }
+
+            if (string.IsNullOrWhiteSpace(mistake.Label) || string.IsNullOrWhiteSpace(mistake.FixLabel) || mistake.Point is not { Count: 2 })
+            {
+                problems.Add($"'{mistake.Id}': a Mistake needs a label, a fixLabel and a point [x, y]");
             }
         }
 

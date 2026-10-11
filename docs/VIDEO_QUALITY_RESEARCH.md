@@ -1,6 +1,6 @@
 # Video kalitesi araştırması - neden yetersiz, nasıl düzelir
 
-Tarih: 2026-10-11. Durum: **araştırma + öneri, henüz uygulanmadı.**
+Tarih: 2026-10-11. Durum: **Faz 1 uygulandı** (hata geri sayımı + seviyeler, çekim kütüphanesi, hook döndürme, kamera). Faz 2 bekliyor: yanlış form çizimleri (`docs/ART_PROMPTS_MISSING.md`).
 
 Karşılaştırma görselleri (yalnızca yerelde, repoya girmez): `output/research/`
 - `ours-5-videos.png` - bizim son 5 videomuzdan saniye 1-7-13-19-25 kareleri

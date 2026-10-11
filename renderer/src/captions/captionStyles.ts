@@ -32,15 +32,18 @@ export const CAPTION_STYLES = {
     // 15 chars, not more: uppercase Arial Black is ~51px per character at
     // 72px, so 15 characters is about as wide as the safe area allows on one
     // line (an 18-char limit wrapped "IF YOU'RE STUCK AT" onto two lines).
-    chunking: { maxWordsPerChunk: 4, maxCharsPerChunk: 15 },
+    // 60px since the storyboard videos (2026-10-11): the picture carries the point, the
+    // caption supports it - at 72px it competed with the drawings. ~42px per uppercase
+    // character at 60px, so 18 characters still fit one line.
+    chunking: { maxWordsPerChunk: 4, maxCharsPerChunk: 18 },
     fontFamily: "Arial Black, Arial, sans-serif",
-    fontSize: 72,
+    fontSize: 60,
     fontWeight: 900,
     textTransform: "uppercase",
     color: "#FFFFFF",
     emphasisColor: "#FFD60A",
     outlineColor: "#000000",
-    outlineWidth: 6,
+    outlineWidth: 5,
     boxColor: null,
   },
   boxed: {

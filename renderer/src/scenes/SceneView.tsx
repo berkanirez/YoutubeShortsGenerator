@@ -4,6 +4,7 @@ import { getAnimation } from "../animations/primitives";
 import type { Scene } from "../schemas/videoPlan";
 import { SceneBackground } from "./SceneBackground";
 import { TEMPLATE_BY_SCENE_TYPE } from "./templates";
+import { SHOT_BY_TYPE } from "./shots";
 import { displayAssetId, PALETTE_BY_SCENE_TYPE, type ScenePalette } from "./theme";
 
 // Content starts entering just after the background starts opening, so the
@@ -18,6 +19,7 @@ export type SceneViewProps = {
   assetSvgById: Record<string, string>;
   durationInFrames: number;
   variantSeed: number;
+  camera: boolean;
 };
 
 // Background + transition here; everything inside the scene is its type's
@@ -30,13 +32,15 @@ export const SceneView: React.FC<SceneViewProps> = ({
   assetSvgById,
   durationInFrames,
   variantSeed,
+  camera,
 }) => {
   // Inside a <Series.Sequence>, useCurrentFrame() starts at 0 for each scene.
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const palette = PALETTE_BY_SCENE_TYPE[scene.type];
   const contentFrame = Math.max(0, frame - (previousPalette ? CONTENT_DELAY_FRAMES : 0));
-  const Template = TEMPLATE_BY_SCENE_TYPE[scene.type];
+  // Storyboard scenes are drawn by their shot; classic scenes by their type's template.
+  const Template = scene.shot ? SHOT_BY_TYPE[scene.shot] : TEMPLATE_BY_SCENE_TYPE[scene.type];
 
   return (
     <AbsoluteFill>
@@ -51,6 +55,7 @@ export const SceneView: React.FC<SceneViewProps> = ({
         assetSvgById={assetSvgById}
         animation={getAnimation(scene.animation, { frame: contentFrame, fps, durationInFrames })}
         variantSeed={variantSeed}
+        camera={camera}
       />
     </AbsoluteFill>
   );

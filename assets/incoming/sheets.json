@@ -181,5 +181,112 @@
       "calf-raise",
       "leg-raise"
     ]
+  },
+  "sheet-pushup-hips-sag.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "pushup-hips-sag",
+      "pushup-elbows-flare",
+      "pushup-half-rep",
+      "pushup-head-drop"
+    ]
+  },
+  "sheet-squat-knees-cave.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "squat-knees-cave",
+      "squat-heels-up",
+      "squat-half",
+      "squat-back-round"
+    ]
+  },
+  "sheet-deadlift-back-round.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "deadlift-back-round",
+      "deadlift-bar-far",
+      "pullup-kipping",
+      "pullup-half-rep"
+    ]
+  },
+  "sheet-pullup-shrug.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "pullup-shrug",
+      "curl-elbow-forward",
+      "curl-swing",
+      "plank-hips-sag"
+    ]
+  },
+  "sheet-plank-hips-high.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "plank-hips-high",
+      "dip-shoulders-forward",
+      "bench-press-elbows-flare",
+      "bench-press-hips-up"
+    ]
+  },
+  "sheet-row-back-round.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "row-back-round",
+      "row-jerk",
+      "lunge-knee-cave",
+      "overhead-press-lean-back"
+    ]
+  },
+  "sheet-squat-heels-up.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "squat-heels-up",
+      "squat-half",
+      "squat-back-round",
+      "deadlift-back-round"
+    ]
+  },
+  "sheet-pullup-kipping.png": {
+    "Rows": 2,
+    "Cols": 2,
+    "Subjects": [
+      "pullup-kipping",
+      "pullup-half-rep",
+      "pullup-shrug",
+      "curl-elbow-forward"
+    ]
+  },
+  "sheet-curl-swing.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "curl-swing",
+      "plank-hips-high",
+      "dip-shoulders-forward"
+    ]
+  },
+  "sheet-bench-press-elbows-flare.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "bench-press-elbows-flare",
+      "bench-press-hips-up",
+      "row-back-round"
+    ]
+  },
+  "sheet-row-jerk.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "row-jerk",
+      "lunge-knee-cave",
+      "overhead-press-lean-back"
+    ]
   }
 }

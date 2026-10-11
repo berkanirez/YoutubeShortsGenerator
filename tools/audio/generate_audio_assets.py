@@ -101,6 +101,13 @@ def sfx_impact() -> np.ndarray:
     return normalize(body + crack, 0.9)
 
 
+def sfx_levelup() -> np.ndarray:
+    # Three quick rising notes and a bright held fourth (C5 E5 G5 C6): "level up".
+    tones = [(523.25, 0.07), (659.25, 0.07), (783.99, 0.07), (1046.5, 0.32)]
+    parts = [note(f, d, (1.0, 0.45, 0.2)) * envelope(int(d * RATE), 0.004, d * 0.6) for f, d in tones]
+    return normalize(np.concatenate(parts), 0.6)
+
+
 def sfx_success() -> np.ndarray:
     # Two rising notes (C6 -> G6): the classic "got it" interval.
     a = note(1046.5, 0.14) * envelope(int(0.14 * RATE), 0.005, 0.08)
@@ -264,7 +271,7 @@ def boom_bap(bpm: float, bars: int, swing: float, energy: float) -> np.ndarray:
 def main() -> None:
     effects = {
         "pop": sfx_pop, "whoosh": sfx_whoosh, "click": sfx_click,
-        "impact": sfx_impact, "success": sfx_success, "error": sfx_error,
+        "impact": sfx_impact, "success": sfx_success, "error": sfx_error, "levelUp": sfx_levelup,
     }
     for name, build in effects.items():
         write(SFX_DIR, name, build())

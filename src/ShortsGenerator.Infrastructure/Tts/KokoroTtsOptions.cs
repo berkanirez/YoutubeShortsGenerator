@@ -1,3 +1,5 @@
+using ShortsGenerator.Domain;
+
 namespace ShortsGenerator.Infrastructure.Tts;
 
 public sealed class KokoroTtsOptions
@@ -20,6 +22,14 @@ public sealed class KokoroTtsOptions
     // Silence after every scene's sentence(s) - a natural breath between scenes, and the
     // moment the cut to the next scene happens in.
     public double PauseSeconds { get; set; } = 0.3;
+
+    // Human-like delivery (SpeechDelivery): a beat after the hook, "Number two." on its own,
+    // varied breaths between scenes, the key phrase emphasized. False = the old flat reading.
+    public bool Expressive { get; set; } = true;
+
+    // How the key phrase is emphasized: Pause (a beat before it), Stress (slower and louder,
+    // spoken as its own part), or None.
+    public EmphasisStyle Emphasis { get; set; } = EmphasisStyle.Pause;
 
     // Includes model load (~5-10s) plus CPU synthesis of a ~30-45s Short.
     public int TimeoutSeconds { get; set; } = 300;

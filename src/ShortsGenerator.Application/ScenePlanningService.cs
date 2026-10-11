@@ -152,7 +152,9 @@ public sealed partial class ScenePlanningService
                 $"(got {segments.Count}). Use a longer script.");
         }
 
-        var knownAssets = await _assetRepository.GetAllAsync(cancellationToken);
+        var knownAssets = (await _assetRepository.GetAllAsync(cancellationToken))
+            .Where(a => !a.Tags.Contains(ArtSubject.WrongFormTag))
+            .ToList();
         var knownAssetIds = knownAssets.Select(a => a.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var schema = VisualPlanSchema.Build(segments.Count, knownAssets.Select(a => a.Id));

@@ -11,6 +11,7 @@ export const SFX_PATHS: Record<SfxId, string> = {
   success: "assets/sfx/success.wav",
   impact: "assets/sfx/impact.wav",
   click: "assets/sfx/click.wav",
+  levelUp: "assets/sfx/levelUp.wav",
 };
 
 const MUSIC_PATHS = {

@@ -21,6 +21,7 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
     private readonly ILogger<VideoGenerationPipeline> _logger;
     private readonly OutputIndexService? _outputIndex;
     private readonly ArtRequestService? _art;
+    private readonly StoryboardService? _storyboard;
 
     public VideoGenerationPipeline(
         IVideoJobRepository repository,
@@ -32,8 +33,10 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         TimeProvider timeProvider,
         ILogger<VideoGenerationPipeline> logger,
         OutputIndexService? outputIndex = null,
-        ArtRequestService? art = null)
+        ArtRequestService? art = null,
+        StoryboardService? storyboard = null)
     {
+        _storyboard = storyboard;
         _outputIndex = outputIndex;
         _art = art;
         _repository = repository;
@@ -167,6 +170,13 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         switch (stage)
         {
             case Stage.Script:
+                // Storyboard formats write the script and the plan together; other topics, and
+                // storyboards that don't come out valid, take the classic script path.
+                if (_storyboard is not null && await _storyboard.TryGenerateAsync(jobId, cancellationToken))
+                {
+                    break;
+                }
+
                 await _scriptService.GenerateScriptAsync(jobId, cancellationToken);
                 break;
             case Stage.Plan:

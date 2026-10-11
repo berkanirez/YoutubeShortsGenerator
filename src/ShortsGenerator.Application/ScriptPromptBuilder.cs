@@ -5,7 +5,7 @@ namespace ShortsGenerator.Application;
 
 public static class ScriptPromptBuilder
 {
-    public static string Build(string topic, IReadOnlyList<string>? previousFailureReasons = null, StoryFormat? format = null)
+    public static string Build(string topic, IReadOnlyList<string>? previousFailureReasons = null, StoryFormat? format = null, TopicBrief? brief = null)
     {
         var sb = new StringBuilder();
 
@@ -13,6 +13,17 @@ public static class ScriptPromptBuilder
         sb.AppendLine("education video. The audience is general fitness enthusiasts, not medical patients.");
         sb.AppendLine();
         sb.AppendLine($"Topic: {topic}");
+        if (brief is not null)
+        {
+            // The small model drifts off a lifestyle topic (a fat-loss title got lifting-form tips).
+            sb.AppendLine($"This video is about {brief.About}. Stay on that - it is not a video about exercise form.");
+            sb.AppendLine("Build it on at least three of these points, in your own words, and add nothing that contradicts them:");
+            foreach (var point in brief.Points)
+            {
+                sb.AppendLine($"- {point}");
+            }
+        }
+
         sb.AppendLine();
         sb.AppendLine(
             $"Write {ScriptValidator.TargetMinWords}-{ScriptValidator.TargetMaxWords} words of plain spoken English " +

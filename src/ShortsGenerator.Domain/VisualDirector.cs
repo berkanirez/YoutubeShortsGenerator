@@ -28,6 +28,20 @@ public static class VisualDirector
         [SceneType.AnatomyHighlight] = ["mascot-flex", "mascot-idle"],
     };
 
+    // Storyboard shots that show the mascot, and the expressions that fit each.
+    private static readonly IReadOnlyDictionary<ShotType, string[]> PosesByShot = new Dictionary<ShotType, string[]>
+    {
+        [ShotType.HookStop] = ["mascot-stop", "mascot-crossed-arms", "mascot-angry"],
+        [ShotType.HookNumber] = ["mascot-pointing", "mascot-idea", "mascot-crossed-arms", "mascot-flex"],
+        [ShotType.HookShock] = ["mascot-shocked", "mascot-mind-blown", "mascot-facepalm", "mascot-confused"],
+        [ShotType.KineticWord] = ["mascot-thinking", "mascot-idea", "mascot-crossed-arms", "mascot-pointing", "mascot-confused", "mascot-writing"],
+        [ShotType.MistakeReaction] = ["mascot-facepalm", "mascot-stop", "mascot-angry", "mascot-confused", "mascot-sad", "mascot-shocked", "mascot-exhausted"],
+        [ShotType.Payoff] = ["mascot-flex", "mascot-celebrate", "mascot-happy"],
+        [ShotType.CtaLoop] = ["mascot-pointing", "mascot-thumbsup", "mascot-wave"],
+    };
+
+    private static readonly ShotType[] CountdownHooks = [ShotType.HookStop, ShotType.HookNumber, ShotType.HookShock, ShotType.HookQuestion];
+
     private static readonly AnimationId[] HookAnimations =
         [AnimationId.PunchZoom, AnimationId.Pop, AnimationId.Shake, AnimationId.Bounce, AnimationId.Slide];
 
@@ -54,9 +68,25 @@ public static class VisualDirector
         foreach (var original in plan.Scenes.OrderBy(s => s.Order))
         {
             var scene = original;
+
+            // A countdown's hook rotates through the hook shots; "which one?" only when the
+            // wrong-form picture for it exists (the composer passes it in AltAssetIds).
+            if (scene.Shot is { } hookShot && CountdownHooks.Contains(hookShot))
+            {
+                var allowed = CountdownHooks.Where(h => h != ShotType.HookQuestion || scene.AltAssetIds is { Count: 2 }).ToList();
+                scene = scene with
+                {
+                    Shot = LeastRecent(allowed, _ => 0, (earlierPlan, h) => earlierPlan.Scenes.FirstOrDefault()?.Shot == h ? 10 : 0),
+                    AssetIds = [],
+                };
+            }
+
             var current = scene.AssetIds.FirstOrDefault();
             var mascotSlot = current is null || current.StartsWith("mascot-", StringComparison.OrdinalIgnoreCase);
-            if (mascotSlot && PosesBySceneType.TryGetValue(scene.Type, out var pool))
+            var pool = scene.Shot is { } shot
+                ? PosesByShot.GetValueOrDefault(shot)
+                : PosesBySceneType.GetValueOrDefault(scene.Type);
+            if (mascotSlot && pool is not null)
             {
                 var candidates = pool.Where(available.Contains).ToList();
                 if (candidates.Count > 0)

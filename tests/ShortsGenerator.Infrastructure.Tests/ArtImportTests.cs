@@ -80,7 +80,8 @@ public sealed class ArtImportTests : IDisposable
         var added = await importer.ImportAsync(subject, CancellationToken.None);
 
         Assert.Equal(["kettlebell-swing-top", "kettlebell-swing-bottom"], added);
-        Assert.Equal(2, runner.Calls.Count);
+        Assert.Equal(3, runner.Calls.Count);   // upscale, prepare, clean holes
+        Assert.Contains("--apply", runner.Calls[2].Arguments);
         Assert.Equal(["-i", Path.Combine(_root, "incoming", "kettlebell-swing-pair.png")], runner.Calls[0].Arguments.Take(2));
         Assert.Contains("--pair", runner.Calls[1].Arguments);
         var ids = new AssetCatalogEditor(manifest).ExistingIds();

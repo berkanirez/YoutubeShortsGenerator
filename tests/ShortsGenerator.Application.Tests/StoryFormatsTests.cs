@@ -31,7 +31,7 @@ public class StoryFormatsTests
         var prompt = ScriptPromptBuilder.Build("3 Push-Up Mistakes Killing Your Gains", format: StoryFormat.Countdown);
 
         Assert.Contains("Make it a story, not a list of facts", prompt);
-        Assert.Contains("number three, number two, number one", prompt);
+        Assert.Contains("number one, number two, number three", prompt);
         Assert.Contains("The FIRST sentence is the hook", prompt);
         Assert.Contains("never name real people, channels or brands", prompt);
     }
@@ -62,5 +62,34 @@ public class StoryFormatRotationTests
     public void ATopicThatNamesItsShape_KeepsIt_WhateverWasUsedBefore()
     {
         Assert.Equal(StoryFormat.Countdown, StoryFormats.Pick("3 Push-Up Mistakes", ["Number three: ..."]));
+    }
+}
+
+public class TopicBriefsTests
+{
+    [Theory]
+    [InlineData("Do This and Get Shredded", "fat-loss")]
+    [InlineData("How to Lose Belly Fat", "fat-loss")]
+    [InlineData("Why Your Abs Aren't Showing", "abs")]
+    [InlineData("How to Build Muscle Faster", "muscle-gain")]
+    [InlineData("Why Rest Days Matter", "recovery")]
+    public void Find_MatchesTheTopicsWords(string topic, string expected)
+    {
+        Assert.Equal(expected, TopicBriefs.Find(topic)!.Id);
+    }
+
+    [Fact]
+    public void ATechniqueTopic_HasNoBrief()
+    {
+        Assert.Null(TopicBriefs.Find("How to Hold the Perfect Plank"));
+    }
+
+    [Fact]
+    public void ThePrompt_KeepsALifestyleTopicOnItsPoints()
+    {
+        var prompt = ScriptPromptBuilder.Build("Do This and Get Shredded", brief: TopicBriefs.Find("Do This and Get Shredded"));
+
+        Assert.Contains("it is not a video about exercise form", prompt);
+        Assert.Contains("calorie deficit", prompt);
     }
 }

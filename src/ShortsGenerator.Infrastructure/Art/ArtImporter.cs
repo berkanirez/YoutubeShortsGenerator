@@ -93,18 +93,62 @@ public sealed class ArtImporter : IArtImporter
 
         var outputs = subject.AssetIds.Select(id => Path.Combine(work, $"{id}.png")).ToList();
         var arguments = new List<string> { _options.PrepareScriptPath, "--size", _options.Size.ToString(CultureInfo.InvariantCulture) };
-        if (subject.Kind == ArtKind.ExercisePair)
+        if (subject.Kind == ArtKind.Cycle)
         {
-            arguments.Add("--pair");
+            // A 2x2 sprite sheet: cut into its four frames, then aligned on one floor (or bar).
+            var cells = Enumerable.Range(1, 4).Select(n => Path.Combine(work, $"cell-{n}.png")).ToList();
+            await RunAsync(
+                "Cutting the animation frames (split_sheet.py)",
+                _options.PythonPath,
+                [Path.Combine(Path.GetDirectoryName(_options.PrepareScriptPath) ?? ".", "split_sheet.py"), input, "2", "2", .. cells],
+                cancellationToken);
+            arguments.Add("--frames");
+            if (subject.Hanging)
+            {
+                arguments.Add("--hanging");
+            }
+
+            arguments.AddRange(cells);
+            arguments.AddRange(outputs);
+            await RunAsync("Aligning the animation frames (prepare_art.py)", _options.PythonPath, arguments, cancellationToken);
         }
-        else if (subject.Kind is ArtKind.Icon or ArtKind.Equipment)
+        else
         {
-            arguments.Add("--keep-holes");
+            if (subject.Kind == ArtKind.ExercisePair)
+            {
+                arguments.Add("--pair");
+            }
+            else if (subject.Kind is ArtKind.Icon or ArtKind.Equipment)
+            {
+                arguments.Add("--keep-holes");
+            }
+
+            arguments.Add(input);
+            arguments.AddRange(outputs);
+            await RunAsync("Preparing the picture (prepare_art.py)", _options.PythonPath, arguments, cancellationToken);
         }
 
-        arguments.Add(input);
-        arguments.AddRange(outputs);
-        await RunAsync("Preparing the picture (prepare_art.py)", _options.PythonPath, arguments, cancellationToken);
+        // Characters only: white gaps between the legs / an arm and the body that prepare_art
+        // kept as "enclosed" (clean_holes.py; eye whites stay). Icons keep their drawn whites.
+        if (subject.Kind is not (ArtKind.Icon or ArtKind.Equipment))
+        {
+            await RunAsync(
+                "Removing left-over background (clean_holes.py)",
+                _options.PythonPath,
+                [Path.Combine(Path.GetDirectoryName(_options.PrepareScriptPath) ?? ".", "clean_holes.py"), "--apply", .. outputs],
+                cancellationToken);
+        }
+
+        // A wrong-form drawing must face the same way as the right-form picture it is compared
+        // with in the split (match_facing.py mirrors it when needed).
+        if (subject.Kind == ArtKind.Mistake && ReferencePicture(subject) is { } reference)
+        {
+            await RunAsync(
+                "Matching the facing direction (match_facing.py)",
+                _options.PythonPath,
+                [Path.Combine(Path.GetDirectoryName(_options.PrepareScriptPath) ?? ".", "match_facing.py"), outputs[0], reference],
+                cancellationToken);
+        }
 
         var added = new List<string>();
         foreach (var (id, file) in subject.AssetIds.Zip(outputs))
@@ -124,6 +168,22 @@ public sealed class ArtImporter : IArtImporter
         }
 
         return added;
+    }
+
+    // The right-form picture a mistake is shown against: <exercise>-<pose> for a pair, else <exercise>.
+    private string? ReferencePicture(ArtSubject mistake)
+    {
+        if (mistake.Exercise is null || !File.Exists(_manifestPath))
+        {
+            return null;
+        }
+
+        using var manifest = System.Text.Json.JsonDocument.Parse(File.ReadAllText(_manifestPath));
+        var paths = manifest.RootElement.EnumerateArray()
+            .ToDictionary(a => a.GetProperty("id").GetString() ?? string.Empty, a => a.GetProperty("filePath").GetString() ?? string.Empty);
+        var pose = mistake.Pose == "bottom" ? "bottom" : "top";
+        var relative = paths.GetValueOrDefault($"{mistake.Exercise}-{pose}") ?? paths.GetValueOrDefault(mistake.Exercise);
+        return relative is null ? null : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(_manifestPath)!, relative));
     }
 
     private async Task RunAsync(string step, string fileName, IReadOnlyList<string> arguments, CancellationToken cancellationToken)

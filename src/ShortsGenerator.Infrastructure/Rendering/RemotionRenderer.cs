@@ -139,6 +139,23 @@ public sealed partial class RemotionRenderer : IRenderer
             }
 
             File.Move(temporaryOutput, request.OutputPath, overwrite: true);
+
+            // The thumbnail next to the video (cover.png). Best effort: a failed cover never
+            // fails a finished video.
+            var coverPath = Path.Combine(Path.GetDirectoryName(request.OutputPath)!, "cover.png");
+            var cover = await RunAsync(
+                new ProcessSpec(
+                    _options.NodePath,
+                    [CliPath, "still", _options.EntryPoint, "ShortCover", coverPath, "--props", propsPath, "--log", "warn"],
+                    StandardInput: null,
+                    Timeout: TimeSpan.FromSeconds(120),
+                    WorkingDirectory: _options.RendererDirectory),
+                cancellationToken);
+            if (cover.ExitCode != 0)
+            {
+                _logger.LogWarning("Job {JobId}: the cover image could not be rendered: {Reason}", request.JobId, SummarizeFailure(cover));
+            }
+
             if (fingerprint is not null)
             {
                 await File.WriteAllTextAsync(fingerprintPath, fingerprint, cancellationToken);

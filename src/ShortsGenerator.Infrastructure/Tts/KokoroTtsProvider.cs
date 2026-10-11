@@ -73,7 +73,7 @@ public sealed partial class KokoroTtsProvider : ITtsProvider
                 $"Local TTS (Kokoro) is not set up: {string.Join("; ", availability.Problems)}. {SetupHint}");
         }
 
-        var spec = BuildProcessSpec(request.Segments, request.OutputPath, voice);
+        var spec = BuildProcessSpec(StdinSegments(request), request.OutputPath, voice);
         ProcessResult result;
         try
         {
@@ -146,7 +146,25 @@ public sealed partial class KokoroTtsProvider : ITtsProvider
         }
     }
 
-    private ProcessSpec BuildProcessSpec(IReadOnlyList<string> segments, string outputPath, string voice) =>
+    // Plain strings, or - when the scenes are known and the delivery is expressive - one
+    // object per scene with its parts (see tools/tts/kokoro_tts.py).
+    private IReadOnlyList<object> StdinSegments(TtsRequest request)
+    {
+        if (!_options.Expressive || request.Scenes is null || request.Scenes.Count != request.Segments.Count)
+        {
+            return request.Segments.Cast<object>().ToList();
+        }
+
+        return SpeechDelivery.Plan(request.Scenes, _options.Emphasis)
+            .Select(s => (object)new
+            {
+                parts = s.Parts.Select(p => new { text = p.Text, speed = p.Speed, gain = p.Gain, pauseAfter = p.PauseAfter }).ToList(),
+                pauseAfter = s.PauseAfter,
+            })
+            .ToList();
+    }
+
+    private ProcessSpec BuildProcessSpec(IReadOnlyList<object> segments, string outputPath, string voice) =>
         new(
             _options.PythonPath,
             [

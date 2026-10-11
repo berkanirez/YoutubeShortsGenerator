@@ -1105,5 +1105,725 @@
     "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
     "orientation": "Square",
     "anchor": "bottom"
+  },
+  {
+    "id": "squat-knees-cave",
+    "filePath": "../exercises/squat-knees-cave.png",
+    "category": "exercise",
+    "tags": ["squat-knees-cave", "wrong-form", "knees-cave-in"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "deadlift-bar-far",
+    "filePath": "../exercises/deadlift-bar-far.png",
+    "category": "exercise",
+    "tags": ["deadlift-bar-far", "wrong-form", "bar-too-far"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "plank-hips-sag",
+    "filePath": "../exercises/plank-hips-sag.png",
+    "category": "exercise",
+    "tags": ["plank-hips-sag", "wrong-form", "sagging-hips"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-hips-sag",
+    "filePath": "../exercises/pushup-hips-sag.png",
+    "category": "exercise",
+    "tags": ["pushup-hips-sag", "wrong-form", "sagging-hips"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-elbows-flare",
+    "filePath": "../exercises/pushup-elbows-flare.png",
+    "category": "exercise",
+    "tags": ["pushup-elbows-flare", "wrong-form", "flared-elbows"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-half-rep",
+    "filePath": "../exercises/pushup-half-rep.png",
+    "category": "exercise",
+    "tags": ["pushup-half-rep", "wrong-form", "half-reps"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-head-drop",
+    "filePath": "../exercises/pushup-head-drop.png",
+    "category": "exercise",
+    "tags": ["pushup-head-drop", "wrong-form", "dropping-head"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-heels-up",
+    "filePath": "../exercises/squat-heels-up.png",
+    "category": "exercise",
+    "tags": ["squat-heels-up", "wrong-form", "heels-lifting"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-half",
+    "filePath": "../exercises/squat-half.png",
+    "category": "exercise",
+    "tags": ["squat-half", "wrong-form", "half-squats"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-back-round",
+    "filePath": "../exercises/squat-back-round.png",
+    "category": "exercise",
+    "tags": ["squat-back-round", "wrong-form", "rounded-back"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "deadlift-back-round",
+    "filePath": "../exercises/deadlift-back-round.png",
+    "category": "exercise",
+    "tags": ["deadlift-back-round", "wrong-form", "rounded-back"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pullup-kipping",
+    "filePath": "../exercises/pullup-kipping.png",
+    "category": "exercise",
+    "tags": ["pullup-kipping", "wrong-form", "swinging"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "pullup-half-rep",
+    "filePath": "../exercises/pullup-half-rep.png",
+    "category": "exercise",
+    "tags": ["pullup-half-rep", "wrong-form", "half-reps"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "pullup-shrug",
+    "filePath": "../exercises/pullup-shrug.png",
+    "category": "exercise",
+    "tags": ["pullup-shrug", "wrong-form", "shrugged-shoulders"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "curl-elbow-forward",
+    "filePath": "../exercises/curl-elbow-forward.png",
+    "category": "exercise",
+    "tags": ["curl-elbow-forward", "wrong-form", "elbows-drifting"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "curl-swing",
+    "filePath": "../exercises/curl-swing.png",
+    "category": "exercise",
+    "tags": ["curl-swing", "wrong-form", "body-swing"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "plank-hips-high",
+    "filePath": "../exercises/plank-hips-high.png",
+    "category": "exercise",
+    "tags": ["plank-hips-high", "wrong-form", "hips-too-high"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "dip-shoulders-forward",
+    "filePath": "../exercises/dip-shoulders-forward.png",
+    "category": "exercise",
+    "tags": ["dip-shoulders-forward", "wrong-form", "shoulders-roll"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-elbows-flare",
+    "filePath": "../exercises/bench-press-elbows-flare.png",
+    "category": "exercise",
+    "tags": ["bench-press-elbows-flare", "wrong-form", "flared-elbows"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-hips-up",
+    "filePath": "../exercises/bench-press-hips-up.png",
+    "category": "exercise",
+    "tags": ["bench-press-hips-up", "wrong-form", "hips-lifting"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-back-round",
+    "filePath": "../exercises/row-back-round.png",
+    "category": "exercise",
+    "tags": ["row-back-round", "wrong-form", "rounded-back"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-jerk",
+    "filePath": "../exercises/row-jerk.png",
+    "category": "exercise",
+    "tags": ["row-jerk", "wrong-form", "yanking-the-bar"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lunge-knee-cave",
+    "filePath": "../exercises/lunge-knee-cave.png",
+    "category": "exercise",
+    "tags": ["lunge-knee-cave", "wrong-form", "knee-caves-in"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-lean-back",
+    "filePath": "../exercises/overhead-press-lean-back.png",
+    "category": "exercise",
+    "tags": ["overhead-press-lean-back", "wrong-form", "leaning-back"],
+    "compatibleSceneTypes": ["Comparison", "MythVsFact"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-f1",
+    "filePath": "../exercises/pushup-f1.png",
+    "category": "exercise",
+    "tags": ["pushup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-f2",
+    "filePath": "../exercises/pushup-f2.png",
+    "category": "exercise",
+    "tags": ["pushup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-f3",
+    "filePath": "../exercises/pushup-f3.png",
+    "category": "exercise",
+    "tags": ["pushup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pushup-f4",
+    "filePath": "../exercises/pushup-f4.png",
+    "category": "exercise",
+    "tags": ["pushup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-point-f1",
+    "filePath": "../mascot/mascot-point-f1.png",
+    "category": "mascot",
+    "tags": ["mascot-point", "wrong-form", "pointing-gesture"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-point-f2",
+    "filePath": "../mascot/mascot-point-f2.png",
+    "category": "mascot",
+    "tags": ["mascot-point", "wrong-form", "pointing-gesture"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-point-f3",
+    "filePath": "../mascot/mascot-point-f3.png",
+    "category": "mascot",
+    "tags": ["mascot-point", "wrong-form", "pointing-gesture"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-point-f4",
+    "filePath": "../mascot/mascot-point-f4.png",
+    "category": "mascot",
+    "tags": ["mascot-point", "wrong-form", "pointing-gesture"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-f1",
+    "filePath": "../exercises/squat-f1.png",
+    "category": "exercise",
+    "tags": ["squat-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-f2",
+    "filePath": "../exercises/squat-f2.png",
+    "category": "exercise",
+    "tags": ["squat-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-f3",
+    "filePath": "../exercises/squat-f3.png",
+    "category": "exercise",
+    "tags": ["squat-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "squat-f4",
+    "filePath": "../exercises/squat-f4.png",
+    "category": "exercise",
+    "tags": ["squat-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "deadlift-f1",
+    "filePath": "../exercises/deadlift-f1.png",
+    "category": "exercise",
+    "tags": ["deadlift-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "deadlift-f2",
+    "filePath": "../exercises/deadlift-f2.png",
+    "category": "exercise",
+    "tags": ["deadlift-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "deadlift-f3",
+    "filePath": "../exercises/deadlift-f3.png",
+    "category": "exercise",
+    "tags": ["deadlift-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "deadlift-f4",
+    "filePath": "../exercises/deadlift-f4.png",
+    "category": "exercise",
+    "tags": ["deadlift-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-f1",
+    "filePath": "../exercises/bench-press-f1.png",
+    "category": "exercise",
+    "tags": ["bench-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-f2",
+    "filePath": "../exercises/bench-press-f2.png",
+    "category": "exercise",
+    "tags": ["bench-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-f3",
+    "filePath": "../exercises/bench-press-f3.png",
+    "category": "exercise",
+    "tags": ["bench-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-f4",
+    "filePath": "../exercises/bench-press-f4.png",
+    "category": "exercise",
+    "tags": ["bench-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "pullup-f1",
+    "filePath": "../exercises/pullup-f1.png",
+    "category": "exercise",
+    "tags": ["pullup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "pullup-f2",
+    "filePath": "../exercises/pullup-f2.png",
+    "category": "exercise",
+    "tags": ["pullup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "pullup-f3",
+    "filePath": "../exercises/pullup-f3.png",
+    "category": "exercise",
+    "tags": ["pullup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "pullup-f4",
+    "filePath": "../exercises/pullup-f4.png",
+    "category": "exercise",
+    "tags": ["pullup-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "chin-up-f1",
+    "filePath": "../exercises/chin-up-f1.png",
+    "category": "exercise",
+    "tags": ["chin-up-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "chin-up-f2",
+    "filePath": "../exercises/chin-up-f2.png",
+    "category": "exercise",
+    "tags": ["chin-up-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "chin-up-f3",
+    "filePath": "../exercises/chin-up-f3.png",
+    "category": "exercise",
+    "tags": ["chin-up-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "chin-up-f4",
+    "filePath": "../exercises/chin-up-f4.png",
+    "category": "exercise",
+    "tags": ["chin-up-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "dip-f1",
+    "filePath": "../exercises/dip-f1.png",
+    "category": "exercise",
+    "tags": ["dip-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "dip-f2",
+    "filePath": "../exercises/dip-f2.png",
+    "category": "exercise",
+    "tags": ["dip-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "dip-f3",
+    "filePath": "../exercises/dip-f3.png",
+    "category": "exercise",
+    "tags": ["dip-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "dip-f4",
+    "filePath": "../exercises/dip-f4.png",
+    "category": "exercise",
+    "tags": ["dip-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "curl-f1",
+    "filePath": "../exercises/curl-f1.png",
+    "category": "exercise",
+    "tags": ["curl-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "curl-f2",
+    "filePath": "../exercises/curl-f2.png",
+    "category": "exercise",
+    "tags": ["curl-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "curl-f3",
+    "filePath": "../exercises/curl-f3.png",
+    "category": "exercise",
+    "tags": ["curl-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "curl-f4",
+    "filePath": "../exercises/curl-f4.png",
+    "category": "exercise",
+    "tags": ["curl-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-f1",
+    "filePath": "../exercises/row-f1.png",
+    "category": "exercise",
+    "tags": ["row-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-f2",
+    "filePath": "../exercises/row-f2.png",
+    "category": "exercise",
+    "tags": ["row-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-f3",
+    "filePath": "../exercises/row-f3.png",
+    "category": "exercise",
+    "tags": ["row-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-f4",
+    "filePath": "../exercises/row-f4.png",
+    "category": "exercise",
+    "tags": ["row-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-f1",
+    "filePath": "../exercises/overhead-press-f1.png",
+    "category": "exercise",
+    "tags": ["overhead-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-f2",
+    "filePath": "../exercises/overhead-press-f2.png",
+    "category": "exercise",
+    "tags": ["overhead-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-f3",
+    "filePath": "../exercises/overhead-press-f3.png",
+    "category": "exercise",
+    "tags": ["overhead-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-f4",
+    "filePath": "../exercises/overhead-press-f4.png",
+    "category": "exercise",
+    "tags": ["overhead-press-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lateral-raise-f1",
+    "filePath": "../exercises/lateral-raise-f1.png",
+    "category": "exercise",
+    "tags": ["lateral-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lateral-raise-f2",
+    "filePath": "../exercises/lateral-raise-f2.png",
+    "category": "exercise",
+    "tags": ["lateral-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lateral-raise-f3",
+    "filePath": "../exercises/lateral-raise-f3.png",
+    "category": "exercise",
+    "tags": ["lateral-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lateral-raise-f4",
+    "filePath": "../exercises/lateral-raise-f4.png",
+    "category": "exercise",
+    "tags": ["lateral-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "leg-raise-f1",
+    "filePath": "../exercises/leg-raise-f1.png",
+    "category": "exercise",
+    "tags": ["leg-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "leg-raise-f2",
+    "filePath": "../exercises/leg-raise-f2.png",
+    "category": "exercise",
+    "tags": ["leg-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "leg-raise-f3",
+    "filePath": "../exercises/leg-raise-f3.png",
+    "category": "exercise",
+    "tags": ["leg-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "leg-raise-f4",
+    "filePath": "../exercises/leg-raise-f4.png",
+    "category": "exercise",
+    "tags": ["leg-raise-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "crunch-f1",
+    "filePath": "../exercises/crunch-f1.png",
+    "category": "exercise",
+    "tags": ["crunch-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "crunch-f2",
+    "filePath": "../exercises/crunch-f2.png",
+    "category": "exercise",
+    "tags": ["crunch-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "crunch-f3",
+    "filePath": "../exercises/crunch-f3.png",
+    "category": "exercise",
+    "tags": ["crunch-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "crunch-f4",
+    "filePath": "../exercises/crunch-f4.png",
+    "category": "exercise",
+    "tags": ["crunch-cycle", "wrong-form"],
+    "compatibleSceneTypes": ["ExerciseDemo"],
+    "orientation": "Square",
+    "anchor": "bottom"
   }
 ]

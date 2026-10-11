@@ -15,7 +15,9 @@ public interface ITtsProvider
 /// </param>
 /// <param name="OutputPath">Absolute path of the .wav file to create (or overwrite).</param>
 /// <param name="Voice">Overrides the configured default voice when set.</param>
-public sealed record TtsRequest(IReadOnlyList<string> Segments, string OutputPath, string? Voice = null);
+/// <param name="Scenes">The narrated scenes behind the segments (same order): lets the provider plan the
+/// delivery - pauses, pace, emphasis (SpeechDelivery). Null = plain, back-to-back segments.</param>
+public sealed record TtsRequest(IReadOnlyList<string> Segments, string OutputPath, string? Voice = null, IReadOnlyList<Scene>? Scenes = null);
 
 /// <param name="Segments">Same order as the request's segments.</param>
 public sealed record TtsResult(

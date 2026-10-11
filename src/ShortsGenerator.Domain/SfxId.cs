@@ -11,4 +11,5 @@ public enum SfxId
     Success,
     Impact,
     Click,
+    LevelUp,
 }

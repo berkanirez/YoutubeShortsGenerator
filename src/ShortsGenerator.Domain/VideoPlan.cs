@@ -23,4 +23,8 @@ public sealed record VideoPlan(
     bool ArtChecked = false,
     // Which look set the renderer uses (hook layout, transitions, motion style), picked by
     // VisualDirector so consecutive videos don't look alike. Null = derived from the text.
-    int? Variant = null);
+    int? Variant = null,
+    // Storyboard videos (StoryboardService): what the scenes were composed from, so they can be
+    // composed again when missing art arrives; and the art they would use if it existed.
+    Storyboard? Storyboard = null,
+    IReadOnlyList<string>? WantedArt = null);

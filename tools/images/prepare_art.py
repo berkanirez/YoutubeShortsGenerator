@@ -3,6 +3,7 @@
     tools/images/.venv/Scripts/python.exe tools/images/prepare_art.py <input> <output.png> [--size 1024]
     tools/images/.venv/Scripts/python.exe tools/images/prepare_art.py --keep-holes <icon.png> <output.png>
     tools/images/.venv/Scripts/python.exe tools/images/prepare_art.py --pair <pair.png> <left.png> <right.png>
+    tools/images/.venv/Scripts/python.exe tools/images/prepare_art.py --frames <in1.png> ... <inN.png> <out1.png> ... <outN.png>
 
 Steps (deterministic, local, no network):
 1. Background: every near-white region that touches the image border becomes transparent -
@@ -134,15 +135,63 @@ def prepare_pair(source: Image.Image, size: int) -> tuple[Image.Image, Image.Ima
     return left, right
 
 
+def prepare_frames(sources: list[Image.Image], size: int, hanging: bool = False) -> list[Image.Image]:
+    """Animation frames cut apart from a sprite sheet: each figure is cropped, then all are
+    placed on one canvas - standing on one floor (or hanging from one bar) and lined up on what
+    touches it - and scaled alike, so the flipbook moves the body, not the whole picture.
+    (Cells from different rows of a sheet don't share coordinates, so this can't reuse the
+    pair's shared crop box.)"""
+    crops = []
+    for source in sources:
+        figure = cutout(source)
+        crops.append(figure.crop(bbox(figure)))
+
+    def anchor(image: Image.Image) -> tuple[int, int]:
+        """(x, y) of what touches the floor or bar. Hanging: the bar is the widest row in the
+        upper half - not the top edge, which is the head when the chin is over the bar."""
+        alpha = np.asarray(image)[:, :, 3] > 0
+        if hanging:
+            widths = alpha[: max(1, image.height // 2)].sum(axis=1)
+            y = int(np.argmax(widths))
+            columns = np.flatnonzero(alpha[y])
+        else:
+            y = image.height
+            columns = np.flatnonzero(alpha[-max(1, image.height // 16):].any(axis=0))
+        return (int(columns.mean()) if columns.size else image.width // 2), y
+
+    anchors = [anchor(c) for c in crops]
+    left = max(x for x, _ in anchors)
+    right = max(c.width - x for c, (x, _) in zip(crops, anchors))
+    above = max(y for _, y in anchors)
+    height = max(above - y + c.height for c, (_, y) in zip(crops, anchors))
+    frames = []
+    for crop, (x, y) in zip(crops, anchors):
+        canvas = Image.new("RGBA", (left + right, height), (0, 0, 0, 0))
+        canvas.paste(crop, (left - x, above - y), crop)
+        frames.append(fit(canvas, (0, 0, canvas.width, canvas.height), size))
+    return frames
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--pair", action="store_true", help="split a side-by-side pair into two aligned images")
+    parser.add_argument("--frames", action="store_true", help="align N cut-apart animation frames: N inputs then N outputs")
+    parser.add_argument("--hanging", action="store_true", help="with --frames: the figure hangs from a bar (align the top)")
     parser.add_argument("--keep-holes", action="store_true",
                         help="only remove the outer background (icons with white parts: calendar cells, plates)")
     parser.add_argument("input")
     parser.add_argument("outputs", nargs="+", metavar="output")
     parser.add_argument("--size", type=int, default=1024)
     args = parser.parse_args()
+    if args.frames:
+        files = [args.input, *args.outputs]
+        if len(files) % 2 or len(files) < 4:
+            print("--frames needs N inputs followed by N outputs", file=sys.stderr)
+            return 2
+        half = len(files) // 2
+        for image, output in zip(prepare_frames([Image.open(f) for f in files[:half]], args.size, args.hanging), files[half:]):
+            image.save(output, optimize=True)
+        return 0
     if len(args.outputs) != (2 if args.pair else 1) or not all(o.lower().endswith(".png") for o in args.outputs):
         print("expected one output .png (two with --pair)", file=sys.stderr)
         return 2

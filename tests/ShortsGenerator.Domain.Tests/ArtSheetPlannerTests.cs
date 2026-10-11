@@ -20,6 +20,26 @@ public class ArtSheetPlannerTests
     }
 
     [Fact]
+    public void AnAnimation_IsFourFramesOfItsExercise_HiddenFromTheClassicPlanner_AndAlwaysItsOwnSheet()
+    {
+        var cycle = new ArtSubject("pushup-cycle", ArtKind.Cycle, ["pushup cycle"], "push-up rep", Top: "arms straight", Bottom: "chest near the floor", Exercise: "pushup");
+        var gesture = new ArtSubject("mascot-point", ArtKind.Cycle, ["pointing gesture"], "gesture", Top: "arms down", Bottom: "pointing");
+
+        Assert.Equal(["pushup-f1", "pushup-f2", "pushup-f3", "pushup-f4"], cycle.AssetIds);
+        Assert.Equal("pushup-cycle.png", cycle.IncomingFileName);
+        Assert.Equal("mascot-point-f1", gesture.AssetIds[0]);
+        Assert.Equal("mascot-point-anim.png", gesture.IncomingFileName);
+        Assert.Contains(ArtSubject.WrongFormTag, cycle.Tags);
+        var prompt = ArtPromptBuilder.Build(cycle);
+        Assert.Contains("Top-left (frame 1): arms straight.", prompt);
+        Assert.Contains("Bottom-right (frame 4): chest near the floor.", prompt);
+
+        var (sheets, singles) = ArtSheetPlanner.Plan([cycle, gesture]);
+        Assert.Empty(sheets);
+        Assert.Equal(2, singles.Count);
+    }
+
+    [Fact]
     public void IconsGoNineToAGrid_AndALoneLeftoverStaysASinglePrompt()
     {
         var (sheets, _) = ArtSheetPlanner.Plan(Enumerable.Range(1, 9).Select(Icon).ToList());

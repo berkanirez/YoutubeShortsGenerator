@@ -20,7 +20,15 @@
       "emphasis": "same number",
       "spokenDurationSeconds": 3.1,
       "secondaryText": null,
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s2",
@@ -38,7 +46,15 @@
       "emphasis": "wears you down",
       "spokenDurationSeconds": 3.9,
       "secondaryText": "Leave reps in reserve",
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s3",
@@ -56,7 +72,15 @@
       "emphasis": "slow negatives",
       "spokenDurationSeconds": 3.5,
       "secondaryText": null,
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s4",
@@ -74,7 +98,15 @@
       "emphasis": "lats",
       "spokenDurationSeconds": 2.9,
       "secondaryText": null,
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s5",
@@ -92,7 +124,15 @@
       "emphasis": "full range",
       "spokenDurationSeconds": 3.3,
       "secondaryText": "Full range",
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s6",
@@ -114,7 +154,15 @@
         "3 days a week",
         "\u002B1 rep",
         "Sleep 7-9 h"
-      ]
+      ],
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s7",
@@ -132,7 +180,15 @@
       "emphasis": "every week",
       "spokenDurationSeconds": 2.7,
       "secondaryText": "a typical pace",
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s8",
@@ -153,7 +209,15 @@
       "items": [
         "Sleep",
         "Protein"
-      ]
+      ],
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     },
     {
       "id": "s9",
@@ -171,7 +235,15 @@
       "emphasis": null,
       "spokenDurationSeconds": null,
       "secondaryText": null,
-      "items": null
+      "items": null,
+      "shot": null,
+      "altAssetIds": null,
+      "focusPoint": null,
+      "arrow": null,
+      "count": null,
+      "total": null,
+      "goalValue": null,
+      "goalUnit": null
     }
   ],
   "style": "default",
@@ -183,5 +255,7 @@
   ],
   "narrationOutdated": false,
   "artChecked": false,
-  "variant": null
+  "variant": null,
+  "storyboard": null,
+  "wantedArt": null
 }
