@@ -32,12 +32,13 @@ export function resolveMusicPath(mood: string | null): string {
 
 // The mix (CLAUDE.md section 13: speech stays dominant). Remotion volumes are
 // linear gain. Calibrated by measurement (tools/audio/measure_mix.py on a real
-// render): music at 0.1 sat only ~12 dB under the speech; 0.06 puts it ~16 dB
-// under - inside the usual 15-20 dB for background music under a voice, still
-// clearly audible in the pauses.
+// render): the target is the usual 15-20 dB of background music under a voice, still
+// clearly audible in the pauses. The first sine-pad loops reached it at 0.06; the
+// old-school boom-bap loops (same RMS, but their energy is in the bass, which the ear
+// hears less) sat ~25 dB under at 0.06 and ~21 dB at 0.1, so 0.16 (~17 dB).
 export const AUDIO_MIX = {
   voice: 1,
-  music: 0.06,
+  music: 0.16,
   sfx: 0.35,
   musicFadeInSeconds: 1,
   // The whole closing (timing.ts CLOSING_SECONDS): the music carries the ending out.

@@ -33,7 +33,7 @@ public class VideoJobTests
         Assert.Equal(VideoJob.MaxTopicLength, VideoJob.Create(new string('a', VideoJob.MaxTopicLength), null, Now).Topic.Length);
     }
 
-    public enum Transition { Planning, Narrating, Rendering, Completed, Failed }
+    public enum Transition { Planning, Narrating, Rendering, Completed, Failed, WaitingForArt }
 
     // The whole state machine in one table: every (from, transition) pair, not just the ones
     // someone thought of. A new allowed edge has to be added here on purpose.
@@ -49,6 +49,8 @@ public class VideoJobTests
         (VideoJobStatus.Planning, Transition.Failed),
         (VideoJobStatus.Narrating, Transition.Failed),
         (VideoJobStatus.Rendering, Transition.Failed),
+        (VideoJobStatus.Planning, Transition.WaitingForArt),  // plan needs missing art
+        (VideoJobStatus.WaitingForArt, Transition.Failed),
     ];
 
     public static TheoryData<VideoJobStatus, Transition> EveryPair()
@@ -97,6 +99,7 @@ public class VideoJobTests
             VideoJobStatus.Rendering => [Transition.Planning, Transition.Narrating, Transition.Rendering],
             VideoJobStatus.Completed => [Transition.Planning, Transition.Narrating, Transition.Rendering, Transition.Completed],
             VideoJobStatus.Failed => [Transition.Failed],
+            VideoJobStatus.WaitingForArt => [Transition.Planning, Transition.WaitingForArt],
             _ => throw new ArgumentOutOfRangeException(nameof(status), status, "Add the new status to this test."),
         };
         foreach (var step in path)
@@ -117,7 +120,18 @@ public class VideoJobTests
             case Transition.Rendering: job.MarkRendering(Now); break;
             case Transition.Completed: job.MarkCompleted("final.mp4", Now); break;
             case Transition.Failed: job.MarkFailed("boom", Now); break;
+            case Transition.WaitingForArt: job.MarkWaitingForArt(Now); break;
         }
+    }
+
+    [Fact]
+    public void ResumeAfterArt_GoesBackToPlanning_OnlyFromWaitingForArt()
+    {
+        var waiting = JobIn(VideoJobStatus.WaitingForArt);
+        waiting.ResumeAfterArt(Now);
+        Assert.Equal(VideoJobStatus.Planning, waiting.Status);
+
+        Assert.Throws<InvalidOperationException>(() => JobIn(VideoJobStatus.Planning).ResumeAfterArt(Now));
     }
 
     [Fact]

@@ -40,7 +40,7 @@ export const SceneView: React.FC<SceneViewProps> = ({
 
   return (
     <AbsoluteFill>
-      <SceneBackground palette={palette} previous={previousPalette} seed={index} />
+      <SceneBackground palette={palette} previous={previousPalette} seed={index} wipeStyle={Math.floor(variantSeed / 2)} />
       <Template
         scene={scene}
         frame={contentFrame}

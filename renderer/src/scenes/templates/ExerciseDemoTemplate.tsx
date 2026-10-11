@@ -1,5 +1,6 @@
 import React from "react";
 import { GenericTemplate } from "./GenericTemplate";
+import { imageInfo } from "../../assets/art";
 import { AssetView, Stage, WALL_FONT, WallText, type TemplateProps } from "./shared";
 import { poseCounterpart, repPose } from "./staging";
 import { wallText } from "./wall";
@@ -19,13 +20,16 @@ export const ExerciseDemoTemplate: React.FC<TemplateProps> = (props) => {
   const bottomId = topId === assetId ? partner : assetId;
   const { top, reps } = repPose(frame, fps);
   const slogan = wallText(scene.onScreenText);
+  const a = imageInfo(assetSvgById[topId] ?? "")?.bounds;
+  const b = imageInfo(assetSvgById[bottomId] ?? "")?.bounds;
+  const union = a && b ? ([Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])] as const) : undefined;
 
   return (
     <Stage animation={animation} wall={slogan ? <WallText text={slogan} color={palette.accent} frame={frame} /> : null}>
       {(box) => (
         <>
-          <AssetView svg={assetSvgById[bottomId]} box={box} style={{ position: "absolute", opacity: 1 - top }} />
-          <AssetView svg={assetSvgById[topId]} box={box} style={{ position: "absolute", opacity: top }} />
+          <AssetView svg={assetSvgById[bottomId]} box={box} bounds={union} style={{ position: "absolute", opacity: 1 - top }} />
+          <AssetView svg={assetSvgById[topId]} box={box} bounds={union} style={{ position: "absolute", opacity: top }} />
           {reps > 0 ? (
             // The rep count as a painted scoreboard number, not a label.
             <div

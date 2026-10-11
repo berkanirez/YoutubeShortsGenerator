@@ -38,6 +38,13 @@ button[data-action] { background: #1e293b; color: var(--text); border: 1px solid
 .badge.Failed { background: #450a0a; color: var(--red); }
 .badge.Planning, .badge.Narrating, .badge.Rendering, .badge.Queued { background: #422006; color: var(--orange); }
 .badge.Paused { background: #1e293b; color: var(--muted); }
+.badge.NeedsArt { background: #3b0764; color: #e9d5ff; }
+.art-box { border: 1px solid #3b0764; border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
+.art-box h3 { margin: 0 0 6px; }
+.art-item { border-top: 1px solid #1e293b; padding: 10px 0; }
+.art-item .art-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.art-item pre { white-space: pre-wrap; font-size: 12px; max-height: 160px; overflow: auto; }
+.art-item .ok { color: var(--green); font-weight: 700; }
 .health { display: flex; gap: 8px; flex-wrap: wrap; }
 .health span { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); }
 .health .ok { color: var(--green); }

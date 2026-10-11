@@ -181,5 +181,7 @@
   "reviewWarnings": [
     "Example warning for the reviewer."
   ],
-  "narrationOutdated": false
+  "narrationOutdated": false,
+  "artChecked": false,
+  "variant": null
 }

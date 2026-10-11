@@ -25,7 +25,7 @@ export const ProgressTemplate: React.FC<TemplateProps> = (props) => {
   return (
     <Stage
       animation={animation}
-      wall={<WallText text={unit ? `${number} ${unit}` : number} color={palette.accent} frame={frame} size={200} maxLines={2} />}
+      wall={<WallText text={unit ? `${number} ${unit}` : number} color={palette.accent} frame={frame} size={190} maxLines={2} />}
     >
       {(box) => <AssetView svg={assetSvgById[assetId]} box={box} />}
     </Stage>

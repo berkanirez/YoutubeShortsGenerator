@@ -24,6 +24,14 @@ press **Generate**, watch the stages, play the result. Then:
 * **Review checklist** - tick the seven checks while you watch; the video shows
   **Reviewed** once all are ticked. A re-render makes the review stale.
 * **Retry** a failed video after fixing the cause - finished stages are kept.
+* **Pictures needed** - when a video talks about something the art catalog doesn't have
+  (forearms, a kettlebell swing, a water bottle), it stops before the voice-over and shows a
+  ready image prompt per missing picture. Generate them (e.g. in ChatGPT, with
+  `assets/mascot/mascot-idle.png` as the reference), upload each one, press **Continue**: the
+  pictures are upscaled to HD, cut out and added to the catalog, and the video goes on. From
+  the command line: `generate.cmd` prints the prompts; put the images into `assets/incoming/`
+  under the names shown and run `continue.cmd <job-id>` (`-SkipMissing` to go on without).
+  What a scene must show is decided from its own words via `assets/manifests/subjects.json`.
 
 Videos are in `output/<job-id>/final.mp4`; `output/INDEX.md` lists them by date and title.
 
@@ -51,9 +59,12 @@ after setup.
 ## How it works
 
 ```
-topic ─► script (Ollama, checked for length, medical claims, repeats)
+topic ─► script (Ollama, told as a story - countdown, levels, a journey, ...; checked for
+                 length, hook, medical claims, repeats)
       ─► scene plan (narration split in code; the model picks visuals under a JSON Schema;
                      variety, asset and on-screen-number rules)
+      ─► art check (each scene shows the subject it talks about; missing pictures pause the
+                    job with ready prompts until you add them)
       ─► voice-over (Kokoro, per scene) ─► scenes timed from the real audio
       ─► render (Remotion: templates, animations, captions, music, sfx) ─► final.mp4 + review.md
 ```

@@ -30,7 +30,7 @@ public static partial class AssetMatcher
     {
         var sceneWords = Words(sceneText);
         var choice = Choose(chosen, sceneType, sceneText, sceneWords, catalog, topic);
-        return sceneType is SceneType.ExerciseDemo ? PreferTopicExercise(choice, sceneWords, catalog, topic) : choice;
+        return sceneType is SceneType.ExerciseDemo ? PreferTopicExercise(choice, sceneText, sceneWords, catalog, topic) : choice;
     }
 
     private static IReadOnlyList<string> Choose(
@@ -68,21 +68,20 @@ public static partial class AssetMatcher
     // matched pull-up's "back" tag; Day 30: "...engage your core" found plank in a pull-up
     // video). An asset's first tag is its subject by catalog convention (docs/ASSETS.md).
     private static IReadOnlyList<string> PreferTopicExercise(
-        IReadOnlyList<string> choice, IReadOnlySet<string> sceneWords, IReadOnlyList<AssetMetadata> catalog, string topic)
+        IReadOnlyList<string> choice, string sceneText, IReadOnlySet<string> sceneWords, IReadOnlyList<AssetMetadata> catalog, string topic)
     {
         var current = Find(catalog, choice);
-        if (current is not null && Names(current, sceneWords))
+        if (current is not null && Names(current, sceneText))
         {
             return choice;
         }
 
-        var topicWords = Words(topic);
         var topicExercise = catalog
-            .Where(a => a.CompatibleSceneTypes.Contains(SceneType.ExerciseDemo) && Names(a, topicWords))
+            .Where(a => a.CompatibleSceneTypes.Contains(SceneType.ExerciseDemo) && Names(a, topic))
             .OrderByDescending(a => Score(a, sceneWords))
             .ThenBy(a => a.Id, StringComparer.Ordinal)
             .FirstOrDefault();
-        return topicExercise is not null && (current is null || !Names(current, topicWords)) ? [topicExercise.Id] : choice;
+        return topicExercise is not null && (current is null || !Names(current, topic)) ? [topicExercise.Id] : choice;
     }
 
     private static AssetMetadata? Find(IReadOnlyList<AssetMetadata> catalog, IReadOnlyList<string> ids) =>
@@ -137,16 +136,46 @@ public static partial class AssetMatcher
             .Select(c => c.Asset)
             .FirstOrDefault();
 
-    // Whether the text names the asset's subject (its first tag).
-    private static bool Names(AssetMetadata asset, IReadOnlySet<string> words) =>
-        asset.Tags.Count > 0 && asset.Tags[0].Split('-', ' ').Select(Stem).All(words.Contains);
+    // Whether the text names the asset's subject (its first tag) as a phrase: the tag's words
+    // next to each other ("muscle up"), or written joined ("pushup" ~ "push-ups"). Words that
+    // merely occur somewhere don't count - "Build Muscle With Push-Ups" is not a muscle-up topic.
+    private static bool Names(AssetMetadata asset, string text)
+    {
+        if (asset.Tags.Count == 0)
+        {
+            return false;
+        }
 
-    // A tag counts when all of its meaningful words occur in the text.
+        var tag = asset.Tags[0].Split('-', ' ', StringSplitOptions.RemoveEmptyEntries).Select(Stem).ToList();
+        var tokens = WordPattern().Matches(text.ToLowerInvariant()).Select(m => m.Value).ToList();
+        var joinedTag = Stem(string.Concat(tag));
+        for (var i = 0; i < tokens.Count; i++)
+        {
+            if (i + tag.Count <= tokens.Count && tag.Select((w, k) => Stem(tokens[i + k]) == w).All(x => x))
+            {
+                return true;
+            }
+
+            for (var len = 1; len <= 3 && i + len <= tokens.Count; len++)
+            {
+                if (Stem(string.Concat(tokens.Skip(i).Take(len))) == joinedTag)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // A tag counts when all of its words occur in the text and at least one of them is meaningful
+    // ("top-position" never counts). All, not just the meaningful ones: "muscle-up" minus the
+    // generic "muscle" left "up", and every "push-ups" became a muscle-up.
     private static int Score(AssetMetadata asset, IReadOnlySet<string> words) =>
         asset.Tags.Count(tag =>
         {
-            var tagWords = tag.Split('-', ' ').Select(Stem).Where(w => !GenericWords.Contains(w)).ToList();
-            return tagWords.Count > 0 && tagWords.All(words.Contains);
+            var tagWords = tag.Split('-', ' ').Select(Stem).ToList();
+            return tagWords.Any(w => !GenericWords.Contains(w)) && tagWords.All(words.Contains);
         });
 
     // Every word, plus each hyphenated pair joined: "pull-ups" gives "pull", "up" and "pullup".

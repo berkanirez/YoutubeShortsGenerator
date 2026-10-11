@@ -1,4 +1,5 @@
 import React from "react";
+import { poseAt } from "./poses";
 import { AssetView, GREEN, RED, Sign, Stage, WallText, type TemplateProps } from "./shared";
 import { spokenFrames } from "./staging";
 import { wallText } from "./wall";
@@ -8,14 +9,18 @@ import { wallText } from "./wall";
 // word, green check). The full sentences are in the captions.
 // MythVsFact paints MYTH / FACT; Comparison paints its own short texts when they fit
 // on the wall ("Half reps" / "Full range"), else WRONG / RIGHT.
-export const VerdictTemplate: React.FC<TemplateProps> = ({ scene, frame, fps, durationInFrames, assetId, assetSvgById, animation }) => {
+export const VerdictTemplate: React.FC<TemplateProps> = (props) => {
+  const { scene, frame, fps, durationInFrames, assetId, assetSvgById, animation } = props;
   const words =
     scene.type === "MythVsFact"
       ? ["MYTH", "FACT"]
       : [wallText(scene.onScreenText, 3) ?? "WRONG", wallText(scene.secondaryText, 3) ?? "RIGHT"];
-  const turn = Math.round(spokenFrames(scene.spokenDurationSeconds, fps, durationInFrames) * 0.4);
+  const spoken = spokenFrames(scene.spokenDurationSeconds, fps, durationInFrames);
+  const turn = Math.round(spoken * 0.4);
   const right = frame >= turn;
   const local = right ? frame - turn : frame;
+  // The mascot's own verdict on the same beat: "stop" becomes a thumbs-up (poses.ts).
+  const pose = poseAt(scene.type, assetId, frame, spoken, assetSvgById);
 
   return (
     <Stage
@@ -25,7 +30,7 @@ export const VerdictTemplate: React.FC<TemplateProps> = ({ scene, frame, fps, du
     >
       {(box) => (
         <>
-          <AssetView svg={assetSvgById[assetId]} box={box} />
+          <AssetView svg={assetSvgById[pose.id]} box={box} />
           <Sign
             key={right ? "check" : "cross"}
             kind={right ? "check" : "cross"}

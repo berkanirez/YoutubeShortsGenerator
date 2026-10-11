@@ -1,6 +1,6 @@
 import { staticFile } from "remotion";
 import { z } from "zod";
-import { imageArt, isRasterPath } from "./art";
+import { imageArt, imageSrc, isRasterPath, parseAnchor, type ArtAnchor, type ImageMeta } from "./art";
 
 // A tiny, dependency-free stand-in for Node's path.posix.normalize/join:
 // this file is bundled into the browser context Remotion renders in (see Day
@@ -30,6 +30,7 @@ function joinAndNormalizePosix(baseDir: string, relativePath: string): string {
 const AssetManifestEntrySchema = z.object({
   id: z.string().min(1),
   filePath: z.string().min(1),
+  anchor: z.string().nullish(),
 });
 
 const AssetManifestSchema = z.array(AssetManifestEntrySchema);
@@ -45,6 +46,61 @@ const AssetManifestSchema = z.array(AssetManifestEntrySchema);
 const MANIFEST_STATIC_PATH = "assets/manifests/assets.json";
 
 let cachedSvgByIdPromise: Promise<Map<string, string>> | null = null;
+const anchorById = new Map<string, ArtAnchor>();
+const measuredByUrl = new Map<string, Promise<Omit<ImageMeta, "anchor">>>();
+
+// Where the figure actually is inside a PNG (its opaque bounds), found by drawing it small on
+// an offscreen canvas. Lets the video size the figure itself, not the picture with its
+// transparent margin, and put its feet exactly on the floor. Runs in the render's browser
+// (calculateMetadata), once per picture; deterministic for the same file.
+async function measureImage(url: string): Promise<Omit<ImageMeta, "anchor">> {
+  const bitmap = await createImageBitmap(await (await fetch(url)).blob());
+  const full = { width: bitmap.width, height: bitmap.height, bounds: [0, 0, bitmap.width, bitmap.height] as [number, number, number, number] };
+  try {
+    const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const context = new OffscreenCanvas(w, h).getContext("2d");
+    if (!context) {
+      return full;
+    }
+    context.drawImage(bitmap, 0, 0, w, h);
+    const alpha = context.getImageData(0, 0, w, h).data;
+    let x0 = w;
+    let y0 = h;
+    let x1 = -1;
+    let y1 = -1;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (alpha[(y * w + x) * 4 + 3] > 24) {
+          x0 = Math.min(x0, x);
+          x1 = Math.max(x1, x);
+          y0 = Math.min(y0, y);
+          y1 = Math.max(y1, y);
+        }
+      }
+    }
+    if (x1 < 0) {
+      return full;
+    }
+    return { ...full, bounds: [x0 / scale, y0 / scale, (x1 + 1) / scale, (y1 + 1) / scale] };
+  } catch {
+    return full;
+  }
+}
+
+async function withMeasurement(id: string, art: string): Promise<string> {
+  const src = imageSrc(art);
+  if (src === null) {
+    return art;
+  }
+  let measured = measuredByUrl.get(src);
+  if (!measured) {
+    measured = measureImage(src);
+    measuredByUrl.set(src, measured);
+  }
+  return imageArt(src, { ...(await measured), anchor: anchorById.get(id) ?? "bottom" });
+}
 
 async function loadManifest(): Promise<Map<string, string>> {
   if (cachedSvgByIdPromise) {
@@ -65,6 +121,7 @@ async function loadManifest(): Promise<Map<string, string>> {
 
     const svgById = new Map<string, string>();
     for (const entry of entries) {
+      anchorById.set(entry.id, parseAnchor(entry.anchor));
       // The manifest's filePath is relative to the manifest file itself (e.g.
       // "../mascot/mascot-idle.svg"), exactly like the .NET side resolves it -
       // see JsonAssetRepository's Day 6 code notes. Re-root it under
@@ -102,7 +159,7 @@ export async function resolveOptionalAssetSvgs(
   for (const id of assetIds) {
     const svg = svgById.get(id);
     if (svg !== undefined) {
-      result[id] = svg;
+      result[id] = await withMeasurement(id, svg);
     }
   }
   return result;
@@ -123,7 +180,7 @@ export async function resolveAssetSvgs(
     if (svg === undefined) {
       throw new Error(`Unknown asset id '${id}' - it is not in the asset manifest.`);
     }
-    result[id] = svg;
+    result[id] = await withMeasurement(id, svg);
   }
 
   return result;

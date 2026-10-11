@@ -116,6 +116,9 @@ public sealed class AssetCatalogEditor
             ? AssetManifestValidator.ValidateArt(sourcePath).Select(p => $"{Path.GetFileName(sourcePath)}: {p}").ToList()
             : [$"Source file '{sourcePath}' does not exist."];
 
+    public IReadOnlySet<string> ExistingIds() =>
+        Load().Select(a => a.Id).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
     private List<AssetMetadata> Load() =>
         JsonSerializer.Deserialize<List<AssetMetadata>>(File.ReadAllText(_manifestPath), JsonOptions) ?? [];
 

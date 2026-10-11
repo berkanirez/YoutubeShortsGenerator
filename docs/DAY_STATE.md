@@ -28,7 +28,51 @@ Post-V1 polish (user requests, 2026-10-09/10 — not a roadmap day):
   render JPEG quality 95 / CRF 15 (crisp outlines). Binary + HD cache gitignored.
 - Art automation: docs/ART_AUTOMATION_PLAN.md rewritten (gaps filled during generation);
   plan only, waiting for the owner's 3 decisions (provider, pre-review use, limits).
-- Tests: .NET 435 + renderer 72 passing; real videos 2e960fbb, df1b42a4, 183c8f45, 4120db68.
+- Pictures-needed loop (art still made by hand): ArtGapDetector decides each scene's subject
+  from its own words (assets/manifests/subjects.json, 67 subjects); missing art -> job status
+  WaitingForArt + art-requests.md with ready prompts; dashboard upload / assets/incoming +
+  continue.cmd; ArtImporter = Real-ESRGAN + prepare_art + catalog add; catalog reloads live.
+  Verified: forearms -> forearms-highlight + barbell requested (not biceps); plank re-import
+  end to end (17 s import, video completed; catalog restored afterwards).
+- Storytelling: StoryFormats (Journey, Countdown, InsideTheBody, Levels, MythStory) picked from
+  the topic; length reminder last in the prompt (first try overshot to 168 words).
+- Music: old-school boom-bap loops synthesized (tools/audio/generate_audio_assets.py: kick,
+  roomy snare, swung hats, syncopated bass, Am9-Dm9-Fmaj7-E7 Rhodes chops, vinyl crackle;
+  16 bars with variation; upbeat 92 BPM, calm 80 BPM; RMS -16 dBFS). Music gain 0.16 ->
+  measured 17.4 dB under the voice. SFX unchanged.
+- Bigger, grounded, alive mascot: art placed by its measured figure bounds (no transparent
+  margin), feet exactly on a drawn floor (FLOOR_Y 1700, layout.ts); anchors bottom/top/center
+  (hanging poses hang from the bar, icons centered); drop shadow removed. Transform motion
+  (squash/sway/bob) was tried and removed - the owner found it "jelly-like"; real animation
+  will come from drawn frames (sprite flipbook, pilot pending). Mid-scene pose reactions stay
+  (poses.ts: myth stop -> thumbs-up, hook thinking -> pointing, outro happy -> thumbs-up).
+- Variety: VisualDirector picks mascot expressions, hook animation and look set (variant:
+  hook layout x 3 wipe styles) least-recently-used over the last 5 finished videos;
+  story format rotates the same way (detected from recent scripts); a subject's picture in
+  at most 2 scenes per video.
+- Art library push: subjects.json 94 entries (+10 icons, +17 mascot expressions as kind
+  MascotPose, joined to VisualDirector pools / poses.ts reactions once imported). AssetTool
+  `prompts` writes docs/ART_PROMPTS_MISSING.md (70 ready prompts, same builder as the videos);
+  AssetTool `import` imports every matching file in assets/incoming (HD + cut-out + catalog).
+- Sheets: ArtSheetPlanner groups missing pictures into sheets (characters 4 in a row, exercises
+  2x2/1x3, icons 3x3, exercise pairs 2 rows) -> 70 pictures in 20 prompts; split_sheet.py cuts
+  them at the emptiest gaps; AssetTool import cuts sheets (assets/incoming/sheets.json) then
+  imports. Verified with a fake sheet end to end (catalog restored afterwards).
+- Owner's art batch imported (2026-10-11): 83 new pictures (catalog 123, 0 missing) from 19
+  sheets + singles. split_sheet.py: --pairs (column-first, keeps drawn heights so bar/floor stay
+  registered) and edge-fragment cleanup; mascot-mind-blown fragment removed. Animation test
+  frames saved as assets/incoming/pushup-cycle.png, mascot-point-anim.png (not used yet).
+- Fixes from the 5-video review: scene prompt example "Full range" was copied into every hook
+  (examples removed); AssetMatcher counted "muscle-up" as "up" (push-ups -> muscle-up) and
+  named a subject when its words merely occurred - now whole tags / phrases only.
+- Review videos: b7ee963a, 9b2a4a44, 45ad4fd2, ccd39551, d8bc92b9 (first batch fe3050d1,
+  7302558a, dfe30c0e, 8955df5c, eb08fce0 has the "Full range" hook bug).
+- Owner verdict on the 5 review videos: too similar, mascot always front-on, text carries the
+  message, weak hooks. Research written: docs/VIDEO_QUALITY_RESEARCH.md (reference channels
+  analysed frame by frame from YouTube storyboards; proposal: storyboard-first beats, shot
+  library, hook engine, wrong-form + 4-frame art). Waiting for the owner's decisions; not built.
+- Tests: .NET 495 + renderer 79 passing; real videos 2e960fbb, df1b42a4, 183c8f45, 4120db68,
+  3db61c0c (plank). Waiting for art: f8f17f7c (forearms), 57d41f96 (dead hang).
 
 Completed (Day 30 — V1 finalization):
 - Docs: README (rewritten), ARCHITECTURE (real), CONFIGURATION,

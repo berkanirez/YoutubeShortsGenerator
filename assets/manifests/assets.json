@@ -6,7 +6,7 @@
     "tags": ["mascot", "neutral", "idle", "intro"],
     "compatibleSceneTypes": ["Hook", "List", "Progress", "Recovery"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-thinking",
@@ -15,7 +15,7 @@
     "tags": ["mascot", "thinking", "myth"],
     "compatibleSceneTypes": ["MythVsFact", "Comparison"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-tired",
@@ -24,7 +24,7 @@
     "tags": ["mascot", "tired", "fatigue"],
     "compatibleSceneTypes": ["Recovery", "ExerciseDemo"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-happy",
@@ -33,7 +33,7 @@
     "tags": ["mascot", "happy", "celebrate", "outro"],
     "compatibleSceneTypes": ["Outro", "Progress"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "pullup-top",
@@ -42,7 +42,7 @@
     "tags": ["pullup", "back", "top-position"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "top"
   },
   {
     "id": "pullup-bottom",
@@ -51,7 +51,7 @@
     "tags": ["pullup", "back", "bottom-position"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "top"
   },
   {
     "id": "pushup-top",
@@ -60,7 +60,7 @@
     "tags": ["pushup", "chest", "top-position"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "pushup-bottom",
@@ -69,7 +69,7 @@
     "tags": ["pushup", "chest", "bottom-position"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "dumbbell",
@@ -96,7 +96,7 @@
     "tags": ["biceps", "arm", "muscle"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "triceps-highlight",
@@ -105,7 +105,7 @@
     "tags": ["triceps", "arm", "muscle"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "quads-highlight",
@@ -114,7 +114,7 @@
     "tags": ["quads", "legs", "squat", "thigh", "front"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "glutes-highlight",
@@ -123,7 +123,7 @@
     "tags": ["glutes", "hips", "squat", "deadlift", "back"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "lats-highlight",
@@ -132,7 +132,7 @@
     "tags": ["lats", "back", "pull-up", "row", "wings"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "core-highlight",
@@ -141,7 +141,7 @@
     "tags": ["core", "abs", "obliques", "plank", "bracing"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "squat-top",
@@ -150,7 +150,7 @@
     "tags": ["squat", "legs", "standing", "top"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "squat-bottom",
@@ -159,7 +159,7 @@
     "tags": ["squat", "legs", "depth", "bottom"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "plank",
@@ -168,7 +168,7 @@
     "tags": ["plank", "core", "hold", "bodyweight"],
     "compatibleSceneTypes": ["ExerciseDemo", "Comparison"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "sleep",
@@ -204,7 +204,7 @@
     "tags": ["dip", "triceps", "chest", "bodyweight"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "dip-bottom",
@@ -213,7 +213,7 @@
     "tags": ["dip", "triceps", "chest", "bodyweight"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "curl-top",
@@ -222,7 +222,7 @@
     "tags": ["curl", "biceps", "dumbbell", "arm"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "curl-bottom",
@@ -231,7 +231,7 @@
     "tags": ["curl", "biceps", "dumbbell", "arm"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "deadlift-top",
@@ -240,7 +240,7 @@
     "tags": ["deadlift", "hamstrings", "glutes", "hinge", "barbell"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "deadlift-bottom",
@@ -249,7 +249,7 @@
     "tags": ["deadlift", "hamstrings", "glutes", "hinge", "barbell"],
     "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "lunge",
@@ -258,7 +258,7 @@
     "tags": ["lunge", "legs", "quads", "glutes", "single-leg"],
     "compatibleSceneTypes": ["ExerciseDemo", "Comparison"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "running",
@@ -267,7 +267,7 @@
     "tags": ["running", "run", "cardio", "endurance", "stride"],
     "compatibleSceneTypes": ["ExerciseDemo", "Recovery", "List", "Progress"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "chest-highlight",
@@ -276,7 +276,7 @@
     "tags": ["chest", "pecs", "pectorals", "bench", "push"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "shoulders-highlight",
@@ -285,7 +285,7 @@
     "tags": ["shoulders", "delts", "deltoids", "overhead", "press"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "hamstrings-highlight",
@@ -294,7 +294,7 @@
     "tags": ["hamstrings", "legs", "thigh", "deadlift", "hinge"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "calves-highlight",
@@ -303,7 +303,7 @@
     "tags": ["calves", "calf", "legs", "ankle"],
     "compatibleSceneTypes": ["AnatomyHighlight"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-flex",
@@ -312,7 +312,7 @@
     "tags": ["mascot", "flex", "strong", "strength", "gains"],
     "compatibleSceneTypes": ["Hook", "Progress", "Outro"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-stop",
@@ -321,7 +321,7 @@
     "tags": ["mascot", "stop", "mistake", "avoid", "wrong"],
     "compatibleSceneTypes": ["MythVsFact", "Hook", "Comparison"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-thumbsup",
@@ -330,7 +330,7 @@
     "tags": ["mascot", "thumbsup", "good", "correct", "approve"],
     "compatibleSceneTypes": ["Outro", "Progress", "List"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-pointing",
@@ -339,7 +339,7 @@
     "tags": ["mascot", "pointing", "tip", "listen", "important"],
     "compatibleSceneTypes": ["Hook", "List"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-shocked",
@@ -348,7 +348,7 @@
     "tags": ["mascot", "shocked", "surprise", "myth", "shock"],
     "compatibleSceneTypes": ["Hook", "MythVsFact"],
     "orientation": "Square",
-    "anchor": "center"
+    "anchor": "bottom"
   },
   {
     "id": "mascot-sleeping",
@@ -357,6 +357,753 @@
     "tags": ["mascot", "sleeping", "sleep", "rest", "recovery"],
     "compatibleSceneTypes": ["Recovery"],
     "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "forearms-highlight",
+    "filePath": "../anatomy/forearms-highlight.png",
+    "category": "anatomy",
+    "tags": ["forearms", "forearm", "grip", "grip-strength", "wrist", "wrists"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "rear-delts-highlight",
+    "filePath": "../anatomy/rear-delts-highlight.png",
+    "category": "anatomy",
+    "tags": ["rear-delts", "rear-delt", "rear-deltoids"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "traps-highlight",
+    "filePath": "../anatomy/traps-highlight.png",
+    "category": "anatomy",
+    "tags": ["traps", "trap", "trapezius"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "upper-back-highlight",
+    "filePath": "../anatomy/upper-back-highlight.png",
+    "category": "anatomy",
+    "tags": ["upper-back", "rhomboids", "shoulder-blades"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lower-back-highlight",
+    "filePath": "../anatomy/lower-back-highlight.png",
+    "category": "anatomy",
+    "tags": ["lower-back", "erectors", "erector", "spine"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "obliques-highlight",
+    "filePath": "../anatomy/obliques-highlight.png",
+    "category": "anatomy",
+    "tags": ["obliques", "oblique", "love-handles"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "hip-flexors-highlight",
+    "filePath": "../anatomy/hip-flexors-highlight.png",
+    "category": "anatomy",
+    "tags": ["hip-flexors", "hip-flexor"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "neck-highlight",
+    "filePath": "../anatomy/neck-highlight.png",
+    "category": "anatomy",
+    "tags": ["neck"],
+    "compatibleSceneTypes": ["AnatomyHighlight"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "chin-up-top",
+    "filePath": "../exercises/chin-up-top.png",
+    "category": "exercise",
+    "tags": ["chin-up", "chin-ups", "chinups", "chinup"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "chin-up-bottom",
+    "filePath": "../exercises/chin-up-bottom.png",
+    "category": "exercise",
+    "tags": ["chin-up", "chin-ups", "chinups", "chinup"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "muscle-up-top",
+    "filePath": "../exercises/muscle-up-top.png",
+    "category": "exercise",
+    "tags": ["muscle-up", "muscle-ups"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "muscle-up-bottom",
+    "filePath": "../exercises/muscle-up-bottom.png",
+    "category": "exercise",
+    "tags": ["muscle-up", "muscle-ups"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "bench-press-top",
+    "filePath": "../exercises/bench-press-top.png",
+    "category": "exercise",
+    "tags": ["bench-press", "bench-pressing", "benching"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "bench-press-bottom",
+    "filePath": "../exercises/bench-press-bottom.png",
+    "category": "exercise",
+    "tags": ["bench-press", "bench-pressing", "benching"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-top",
+    "filePath": "../exercises/overhead-press-top.png",
+    "category": "exercise",
+    "tags": ["overhead-press", "shoulder-press", "military-press", "ohp"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "overhead-press-bottom",
+    "filePath": "../exercises/overhead-press-bottom.png",
+    "category": "exercise",
+    "tags": ["overhead-press", "shoulder-press", "military-press", "ohp"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-top",
+    "filePath": "../exercises/row-top.png",
+    "category": "exercise",
+    "tags": ["row", "rows", "barbell-row", "barbell-rows", "dumbbell-row", "dumbbell-rows", "bent-over-row", "bent-over-rows"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "row-bottom",
+    "filePath": "../exercises/row-bottom.png",
+    "category": "exercise",
+    "tags": ["row", "rows", "barbell-row", "barbell-rows", "dumbbell-row", "dumbbell-rows", "bent-over-row", "bent-over-rows"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "hip-thrust-top",
+    "filePath": "../exercises/hip-thrust-top.png",
+    "category": "exercise",
+    "tags": ["hip-thrust", "hip-thrusts"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "hip-thrust-bottom",
+    "filePath": "../exercises/hip-thrust-bottom.png",
+    "category": "exercise",
+    "tags": ["hip-thrust", "hip-thrusts"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "glute-bridge-top",
+    "filePath": "../exercises/glute-bridge-top.png",
+    "category": "exercise",
+    "tags": ["glute-bridge", "glute-bridges"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "glute-bridge-bottom",
+    "filePath": "../exercises/glute-bridge-bottom.png",
+    "category": "exercise",
+    "tags": ["glute-bridge", "glute-bridges"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "kettlebell-swing-top",
+    "filePath": "../exercises/kettlebell-swing-top.png",
+    "category": "exercise",
+    "tags": ["kettlebell-swing", "kettlebell-swings", "kb-swings"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "kettlebell-swing-bottom",
+    "filePath": "../exercises/kettlebell-swing-bottom.png",
+    "category": "exercise",
+    "tags": ["kettlebell-swing", "kettlebell-swings", "kb-swings"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lateral-raise-top",
+    "filePath": "../exercises/lateral-raise-top.png",
+    "category": "exercise",
+    "tags": ["lateral-raise", "lateral-raises", "side-raises", "side-raise"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "lateral-raise-bottom",
+    "filePath": "../exercises/lateral-raise-bottom.png",
+    "category": "exercise",
+    "tags": ["lateral-raise", "lateral-raises", "side-raises", "side-raise"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "tricep-extension-top",
+    "filePath": "../exercises/tricep-extension-top.png",
+    "category": "exercise",
+    "tags": ["tricep-extension", "tricep-extensions", "triceps-extension", "overhead-extension", "skull-crushers", "skull-crusher"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "tricep-extension-bottom",
+    "filePath": "../exercises/tricep-extension-bottom.png",
+    "category": "exercise",
+    "tags": ["tricep-extension", "tricep-extensions", "triceps-extension", "overhead-extension", "skull-crushers", "skull-crusher"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "calf-raise-top",
+    "filePath": "../exercises/calf-raise-top.png",
+    "category": "exercise",
+    "tags": ["calf-raise", "calf-raises"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "calf-raise-bottom",
+    "filePath": "../exercises/calf-raise-bottom.png",
+    "category": "exercise",
+    "tags": ["calf-raise", "calf-raises"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "leg-raise-top",
+    "filePath": "../exercises/leg-raise-top.png",
+    "category": "exercise",
+    "tags": ["leg-raise", "hanging-leg-raises", "hanging-leg-raise", "leg-raises"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "leg-raise-bottom",
+    "filePath": "../exercises/leg-raise-bottom.png",
+    "category": "exercise",
+    "tags": ["leg-raise", "hanging-leg-raises", "hanging-leg-raise", "leg-raises"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "crunch-top",
+    "filePath": "../exercises/crunch-top.png",
+    "category": "exercise",
+    "tags": ["crunch", "crunches", "sit-ups", "sit-up", "situps"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "crunch-bottom",
+    "filePath": "../exercises/crunch-bottom.png",
+    "category": "exercise",
+    "tags": ["crunch", "crunches", "sit-ups", "sit-up", "situps"],
+    "compatibleSceneTypes": ["ExerciseDemo", "AnatomyHighlight", "Comparison"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "side-plank",
+    "filePath": "../exercises/side-plank.png",
+    "category": "exercise",
+    "tags": ["side-plank", "side-planks"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "walking",
+    "filePath": "../exercises/walking.png",
+    "category": "exercise",
+    "tags": ["walking", "walk", "walks", "daily-walk"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "dead-hang",
+    "filePath": "../exercises/dead-hang.png",
+    "category": "exercise",
+    "tags": ["dead-hang", "dead-hangs", "hanging"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "top"
+  },
+  {
+    "id": "wall-sit",
+    "filePath": "../exercises/wall-sit.png",
+    "category": "exercise",
+    "tags": ["wall-sit", "wall-sits"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "l-sit",
+    "filePath": "../exercises/l-sit.png",
+    "category": "exercise",
+    "tags": ["l-sit", "l-sits"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "handstand",
+    "filePath": "../exercises/handstand.png",
+    "category": "exercise",
+    "tags": ["handstand", "handstands"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "jump-rope",
+    "filePath": "../exercises/jump-rope.png",
+    "category": "exercise",
+    "tags": ["jump-rope", "jumping-rope", "skipping-rope"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "stretching",
+    "filePath": "../exercises/stretching.png",
+    "category": "exercise",
+    "tags": ["stretching", "stretch", "stretches", "mobility"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "burpee",
+    "filePath": "../exercises/burpee.png",
+    "category": "exercise",
+    "tags": ["burpee", "burpees"],
+    "compatibleSceneTypes": ["ExerciseDemo", "Comparison", "List"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "kettlebell",
+    "filePath": "../props/kettlebell.png",
+    "category": "equipment",
+    "tags": ["kettlebell", "kettlebells"],
+    "compatibleSceneTypes": ["ExerciseDemo", "List", "Progress"],
+    "orientation": "Square",
     "anchor": "center"
+  },
+  {
+    "id": "barbell",
+    "filePath": "../props/barbell.png",
+    "category": "equipment",
+    "tags": ["barbell", "barbells"],
+    "compatibleSceneTypes": ["ExerciseDemo", "List", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "resistance-band",
+    "filePath": "../props/resistance-band.png",
+    "category": "equipment",
+    "tags": ["resistance-band", "resistance-bands", "bands"],
+    "compatibleSceneTypes": ["ExerciseDemo", "List", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "foam-roller",
+    "filePath": "../props/foam-roller.png",
+    "category": "equipment",
+    "tags": ["foam-roller", "foam-rolling", "foam-roll"],
+    "compatibleSceneTypes": ["ExerciseDemo", "List", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "water",
+    "filePath": "../icons/water.png",
+    "category": "icon",
+    "tags": ["water", "hydration", "hydrated", "dehydrated", "dehydration"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "protein-shake",
+    "filePath": "../icons/protein-shake.png",
+    "category": "icon",
+    "tags": ["protein-shake", "protein-shakes", "protein-powder", "whey"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "timer",
+    "filePath": "../icons/timer.png",
+    "category": "icon",
+    "tags": ["timer", "stopwatch", "rest-time", "rest-between-sets", "tempo"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "scale",
+    "filePath": "../icons/scale.png",
+    "category": "icon",
+    "tags": ["scale", "bathroom-scale", "weigh-yourself", "weigh-in"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "heart",
+    "filePath": "../icons/heart.png",
+    "category": "icon",
+    "tags": ["heart", "heart-rate", "cardio", "cardiovascular"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "coffee",
+    "filePath": "../icons/coffee.png",
+    "category": "icon",
+    "tags": ["coffee", "caffeine", "pre-workout"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "creatine",
+    "filePath": "../icons/creatine.png",
+    "category": "icon",
+    "tags": ["creatine"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "notebook",
+    "filePath": "../icons/notebook.png",
+    "category": "icon",
+    "tags": ["notebook", "journal", "logbook", "log-your-workouts", "track-your-workouts", "tracking"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "warm-up",
+    "filePath": "../icons/warm-up.png",
+    "category": "icon",
+    "tags": ["warm-up", "warming-up", "warmup"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "trophy",
+    "filePath": "../icons/trophy.png",
+    "category": "icon",
+    "tags": ["trophy", "goal", "goals", "results", "winning"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "brain",
+    "filePath": "../icons/brain.png",
+    "category": "icon",
+    "tags": ["brain", "mind-muscle-connection", "mind-muscle", "focus", "mindset"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "junk-food",
+    "filePath": "../icons/junk-food.png",
+    "category": "icon",
+    "tags": ["junk-food", "fast-food", "processed-food", "sugar", "soda", "snacks"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "vegetables",
+    "filePath": "../icons/vegetables.png",
+    "category": "icon",
+    "tags": ["vegetables", "veggies", "fruit", "fruits", "fiber", "vitamins"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "eggs",
+    "filePath": "../icons/eggs.png",
+    "category": "icon",
+    "tags": ["eggs", "egg"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "warning",
+    "filePath": "../icons/warning.png",
+    "category": "icon",
+    "tags": ["warning", "injury", "injuries", "risk", "careful", "danger"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "checklist",
+    "filePath": "../icons/checklist.png",
+    "category": "icon",
+    "tags": ["checklist", "program", "routine", "plan", "workout-plan"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "alcohol",
+    "filePath": "../icons/alcohol.png",
+    "category": "icon",
+    "tags": ["alcohol", "beer", "drinking", "hangover"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "phone",
+    "filePath": "../icons/phone.png",
+    "category": "icon",
+    "tags": ["phone", "scrolling", "social-media", "screen-time"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "sun",
+    "filePath": "../icons/sun.png",
+    "category": "icon",
+    "tags": ["sun", "sunlight", "vitamin-d", "morning-sun"],
+    "compatibleSceneTypes": ["List", "Recovery", "MythVsFact", "Progress"],
+    "orientation": "Square",
+    "anchor": "center"
+  },
+  {
+    "id": "mascot-facepalm",
+    "filePath": "../mascot/mascot-facepalm.png",
+    "category": "mascot",
+    "tags": ["mascot-facepalm", "facepalm", "frustrated"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-confused",
+    "filePath": "../mascot/mascot-confused.png",
+    "category": "mascot",
+    "tags": ["mascot-confused", "confused"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-shrug",
+    "filePath": "../mascot/mascot-shrug.png",
+    "category": "mascot",
+    "tags": ["mascot-shrug", "shrug", "unsure"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-crossed-arms",
+    "filePath": "../mascot/mascot-crossed-arms.png",
+    "category": "mascot",
+    "tags": ["mascot-crossed-arms", "confident", "serious"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-celebrate",
+    "filePath": "../mascot/mascot-celebrate.png",
+    "category": "mascot",
+    "tags": ["mascot-celebrate", "celebrate", "victory"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-mind-blown",
+    "filePath": "../mascot/mascot-mind-blown.png",
+    "category": "mascot",
+    "tags": ["mascot-mind-blown", "mind-blown", "amazed"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-idea",
+    "filePath": "../mascot/mascot-idea.png",
+    "category": "mascot",
+    "tags": ["mascot-idea", "idea", "tip"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-wave",
+    "filePath": "../mascot/mascot-wave.png",
+    "category": "mascot",
+    "tags": ["mascot-wave", "wave", "hello", "goodbye"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-exhausted",
+    "filePath": "../mascot/mascot-exhausted.png",
+    "category": "mascot",
+    "tags": ["mascot-exhausted", "exhausted", "out-of-breath"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-drinking",
+    "filePath": "../mascot/mascot-drinking.png",
+    "category": "mascot",
+    "tags": ["mascot-drinking", "drinking-water"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-eating",
+    "filePath": "../mascot/mascot-eating.png",
+    "category": "mascot",
+    "tags": ["mascot-eating", "eating"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-stretching",
+    "filePath": "../mascot/mascot-stretching.png",
+    "category": "mascot",
+    "tags": ["mascot-stretching", "stretching-arms"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-angry",
+    "filePath": "../mascot/mascot-angry.png",
+    "category": "mascot",
+    "tags": ["mascot-angry", "angry", "annoyed"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-sad",
+    "filePath": "../mascot/mascot-sad.png",
+    "category": "mascot",
+    "tags": ["mascot-sad", "sad", "disappointed"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-laughing",
+    "filePath": "../mascot/mascot-laughing.png",
+    "category": "mascot",
+    "tags": ["mascot-laughing", "laughing"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-writing",
+    "filePath": "../mascot/mascot-writing.png",
+    "category": "mascot",
+    "tags": ["mascot-writing", "writing", "notes"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
+  },
+  {
+    "id": "mascot-sitting",
+    "filePath": "../mascot/mascot-sitting.png",
+    "category": "mascot",
+    "tags": ["mascot-sitting", "sitting", "resting"],
+    "compatibleSceneTypes": ["Hook", "Outro", "MythVsFact", "Comparison", "List", "Progress", "Recovery"],
+    "orientation": "Square",
+    "anchor": "bottom"
   }
 ]

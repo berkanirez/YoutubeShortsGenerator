@@ -20,6 +20,7 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<VideoGenerationPipeline> _logger;
     private readonly OutputIndexService? _outputIndex;
+    private readonly ArtRequestService? _art;
 
     public VideoGenerationPipeline(
         IVideoJobRepository repository,
@@ -30,9 +31,11 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         RenderService renderService,
         TimeProvider timeProvider,
         ILogger<VideoGenerationPipeline> logger,
-        OutputIndexService? outputIndex = null)
+        OutputIndexService? outputIndex = null,
+        ArtRequestService? art = null)
     {
         _outputIndex = outputIndex;
+        _art = art;
         _repository = repository;
         _planStore = planStore;
         _scriptService = scriptService;
@@ -58,7 +61,7 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
 
             if (item.Kind == VideoJobWorkKind.Renarrate)
             {
-                await RunStageAsync(Stage.Narration, item.JobId, cancellationToken);
+                await RunStageAsync(Stage.Narration, item.JobId, cancellationToken, artGate: false);
                 await RunStageAsync(Stage.Render, item.JobId, cancellationToken);
                 return;
             }
@@ -135,7 +138,7 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         VideoJobStatus.Narrating => await _planStore.LoadAsync(job.Id, cancellationToken) is { } plan && IsNarrated(plan)
             ? Stage.Render
             : Stage.Narration,
-        _ => null, // Rendering (interrupted elsewhere), Completed, Failed
+        _ => null, // Rendering (interrupted elsewhere), Completed, Failed, WaitingForArt
     };
 
     private async Task MarkWorkFinishedAsync(Guid jobId)
@@ -156,7 +159,9 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         }
     }
 
-    private async Task RunStageAsync(Stage stage, Guid jobId, CancellationToken cancellationToken)
+    // artGate: a full generation checks the plan against the art catalog before narrating
+    // (ArtRequestService); a manual re-narration of an existing video does not.
+    private async Task RunStageAsync(Stage stage, Guid jobId, CancellationToken cancellationToken, bool artGate = true)
     {
         _logger.LogInformation("Job {JobId}: running stage {Stage}", jobId, stage);
         switch (stage)
@@ -168,6 +173,11 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
                 await _planningService.GeneratePlanAsync(jobId, cancellationToken);
                 break;
             case Stage.Narration:
+                if (artGate && _art is not null && await _art.HoldForArtAsync(jobId, cancellationToken))
+                {
+                    break; // WaitingForArt: the next stage lookup finds nothing to do
+                }
+
                 await _narrationService.GenerateNarrationAsync(jobId, cancellationToken);
                 break;
             case Stage.Render:
@@ -194,5 +204,5 @@ public sealed class VideoGenerationPipeline : IVideoJobProcessor
         LlmUnavailableException or ScriptGenerationException or VideoPlanGenerationException or
         TtsUnavailableException or TtsGenerationException or
         RendererUnavailableException or RenderFailedException or
-        InvalidOperationException;
+        ArtImportException or InvalidOperationException;
 }

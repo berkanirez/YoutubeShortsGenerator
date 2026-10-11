@@ -1,6 +1,7 @@
 import React from "react";
 import { Easing, Img, interpolate } from "remotion";
-import { imageSrc } from "../../assets/art";
+import { imageInfo, imageSrc } from "../../assets/art";
+import { FLOOR_Y, FRAME_WIDTH, placeArt, VISUAL_TOP_ALONE, VISUAL_TOP_WITH_WALL, WALL_TOP, type Box } from "../layout";
 import type { AnimationResult } from "../../animations/primitives";
 import type { Scene } from "../../schemas/videoPlan";
 import type { ScenePalette } from "../theme";
@@ -39,7 +40,7 @@ export const WallText: React.FC<{
   size?: number;
   maxLines?: number;
   tilt?: number;
-}> = ({ text, color, frame, size = 140, maxLines = 2, tilt = -4 }) => {
+}> = ({ text, color, frame, size = 130, maxLines = 2, tilt = -4 }) => {
   const paint = interpolate(frame, [0, 9], [0, 100], { ...clamp, easing: Easing.out(Easing.cubic) });
   return (
     <div
@@ -118,77 +119,72 @@ export const Sign: React.FC<{ kind: SignKind; frame: number; color: string; size
   );
 };
 
-// The visual's box on the frame. Art is cropped tight to the figure (prepare_art.py), so
-// it's fitted inside the box - a standing mascot is limited by the height, a plank by the
-// width - and stands on the box's bottom edge, the "floor".
-export type Box = { width: number; height: number };
-
+// Measured PNG art is placed by its figure's bounds (feet on the floor, see layout.ts). The
+// picture itself is never wobbled (squash/sway read as jelly, not animation): movement comes
+// from changing drawn poses. No drop shadow: on the flat grey wall it read as a dirty smudge, and the
+// floor line already grounds the figure.
 export const AssetView: React.FC<{
   svg: string | undefined;
   box: Box;
   style?: React.CSSProperties;
-  shadow?: boolean;
-}> = ({ svg, box, style, shadow = true }) => (
-  <div style={{ position: "relative", width: box.width, height: box.height, ...style }}>
-    {shadow ? (
-      // A soft floor shadow grounds the asset instead of leaving it floating.
-      <div
-        style={{
-          position: "absolute",
-          left: "28%",
-          right: "28%",
-          bottom: -box.height * 0.02,
-          height: box.height * 0.045,
-          borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(0,0,0,0.45) 0%, transparent 70%)",
-        }}
-      />
-    ) : null}
-    {svg && imageSrc(svg) ? (
-      // PNG art: <Img> delays the frame until the image is decoded, so no frame is ever
-      // rendered with a blank or half-loaded picture.
-      <Img
-        src={imageSrc(svg)!}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          objectPosition: "50% 100%",
-        }}
-      />
-    ) : svg ? (
-      <div
-        style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-        // Safe: this markup comes from our own hand-authored SVG files under
-        // assets/, resolved and read by assetManifest.ts - never from the LLM
-        // or any other untrusted source.
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
-    ) : null}
-  </div>
-);
+  // Place by these figure bounds instead of the picture's own (both poses of a pair use their
+  // union, so the floor/bar stays put when the rep flips between them).
+  bounds?: readonly [number, number, number, number];
+}> = ({ svg, box, style, bounds }) => {
+  const info = svg ? imageInfo(svg) : null;
+  const src = svg ? imageSrc(svg) : null;
+  const frameStyle: React.CSSProperties = { position: "relative", width: box.width, height: box.height, ...style };
 
-// Where things go on the 1080x1920 frame. The wall holds at most 2 lines (~260px from
-// WALL_TOP); the visual starts below them (a first try let the mascot's head cover the
-// second line) and runs almost to the bottom: the feet may go behind the captions and the
-// edge of the Shorts title area - the mascot filling the screen matters more.
-const WALL_TOP = 210;
-const VISUAL_TOP_WITH_WALL = 480;
-const VISUAL_TOP_ALONE = 240;
-const VISUAL_BOTTOM = 1680;
+  if (info) {
+    const p = placeArt(bounds ? { ...info, bounds } : info, info.anchor, box);
+    return (
+      <div style={frameStyle}>
+        <div
+          style={{
+            position: "absolute",
+            left: p.left,
+            top: p.top,
+            width: p.width,
+            height: p.height,
+          }}
+        >
+          {/* <Img> delays the frame until the image is decoded: never a blank picture. */}
+          <Img src={info.src} style={{ width: "100%", height: "100%" }} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={frameStyle}>
+      {src ? (
+        <Img
+          src={src}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", objectPosition: "50% 100%" }}
+        />
+      ) : svg ? (
+        <div
+          style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          // Safe: this markup comes from our own hand-authored SVG files under
+          // assets/, resolved and read by assetManifest.ts - never from the LLM
+          // or any other untrusted source.
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      ) : null}
+    </div>
+  );
+};
 
 // Every template's layout: the slogan on the wall at the top, the visual as big as the frame
-// allows below it, and anything stamped on the visual (signs, counters) positioned inside
-// `children`'s box.
+// allows below it, standing on the floor (layout.ts), and anything stamped on the visual
+// (signs, counters) positioned inside `children`'s box.
 export const Stage: React.FC<{
   animation: AnimationResult;
   wall: React.ReactNode;
   children: (box: Box) => React.ReactNode;
 }> = ({ animation, wall, children }) => {
   const top = wall ? VISUAL_TOP_WITH_WALL : VISUAL_TOP_ALONE;
-  const box = { width: 1080, height: VISUAL_BOTTOM - top };
+  const box = { width: FRAME_WIDTH, height: FLOOR_Y - top };
   return (
     <>
       {wall ? (
@@ -202,3 +198,5 @@ export const Stage: React.FC<{
     </>
   );
 };
+
+export type { Box } from "../layout";

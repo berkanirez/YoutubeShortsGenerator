@@ -59,6 +59,18 @@
       <button type="button" data-action="retry" hidden>Retry</button>
     </div>
     <p class="path"><span class="muted">Output:</span> <code data-field="path"></code></p>
+    <section class="art-box" data-field="art-box" hidden>
+      <h3>Pictures needed</h3>
+      <p class="muted">This video needs pictures the catalog doesn't have yet. For each one: copy the prompt into the image
+        tool (attach the <a data-field="art-reference" target="_blank">reference mascot</a> where it says so), save the result,
+        and upload it here. Then press Continue - the video goes on from the same script and plan.</p>
+      <div data-field="art-list"></div>
+      <div class="actions">
+        <button type="button" data-action="art-continue">Continue</button>
+        <button type="button" class="secondary" data-action="art-skip">Continue without the missing ones</button>
+      </div>
+      <p class="message" data-field="art-message"></p>
+    </section>
     <details data-field="review-box" hidden>
       <summary>Review checklist (do this before publishing)</summary>
       <div class="checks" data-field="review-checks"></div>

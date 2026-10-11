@@ -1,0 +1,185 @@
+{
+  "sheet-mascot-facepalm.png": {
+    "Rows": 1,
+    "Cols": 4,
+    "Subjects": [
+      "mascot-facepalm",
+      "mascot-confused",
+      "mascot-shrug",
+      "mascot-crossed-arms"
+    ]
+  },
+  "sheet-mascot-celebrate.png": {
+    "Rows": 1,
+    "Cols": 4,
+    "Subjects": [
+      "mascot-celebrate",
+      "mascot-mind-blown",
+      "mascot-idea",
+      "mascot-wave"
+    ]
+  },
+  "sheet-mascot-exhausted.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "mascot-exhausted",
+      "mascot-drinking",
+      "mascot-eating"
+    ]
+  },
+  "sheet-mascot-stretching.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "mascot-stretching",
+      "mascot-angry",
+      "mascot-sad"
+    ]
+  },
+  "sheet-mascot-laughing.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "mascot-laughing",
+      "mascot-writing",
+      "mascot-sitting"
+    ]
+  },
+  "sheet-forearms.png": {
+    "Rows": 1,
+    "Cols": 4,
+    "Subjects": [
+      "forearms",
+      "rear-delts",
+      "traps",
+      "upper-back"
+    ]
+  },
+  "sheet-lower-back.png": {
+    "Rows": 1,
+    "Cols": 4,
+    "Subjects": [
+      "lower-back",
+      "obliques",
+      "hip-flexors",
+      "neck"
+    ]
+  },
+  "sheet-side-plank.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "side-plank",
+      "walking",
+      "dead-hang"
+    ]
+  },
+  "sheet-wall-sit.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "wall-sit",
+      "l-sit",
+      "handstand"
+    ]
+  },
+  "sheet-jump-rope.png": {
+    "Rows": 1,
+    "Cols": 3,
+    "Subjects": [
+      "jump-rope",
+      "stretching",
+      "burpee"
+    ]
+  },
+  "sheet-kettlebell.png": {
+    "Rows": 3,
+    "Cols": 3,
+    "Subjects": [
+      "kettlebell",
+      "barbell",
+      "resistance-band",
+      "foam-roller",
+      "water",
+      "protein-shake",
+      "timer",
+      "scale"
+    ]
+  },
+  "sheet-heart.png": {
+    "Rows": 3,
+    "Cols": 3,
+    "Subjects": [
+      "heart",
+      "coffee",
+      "creatine",
+      "notebook",
+      "warm-up",
+      "trophy",
+      "brain",
+      "junk-food"
+    ]
+  },
+  "sheet-vegetables.png": {
+    "Rows": 3,
+    "Cols": 3,
+    "Subjects": [
+      "vegetables",
+      "eggs",
+      "warning",
+      "checklist",
+      "alcohol",
+      "phone",
+      "sun"
+    ]
+  },
+  "sheet-chin-up.png": {
+    "Rows": 2,
+    "Cols": 1,
+    "Subjects": [
+      "chin-up",
+      "muscle-up"
+    ]
+  },
+  "sheet-bench-press.png": {
+    "Rows": 2,
+    "Cols": 1,
+    "Subjects": [
+      "bench-press",
+      "overhead-press"
+    ]
+  },
+  "sheet-row.png": {
+    "Rows": 2,
+    "Cols": 1,
+    "Subjects": [
+      "row",
+      "hip-thrust"
+    ]
+  },
+  "sheet-glute-bridge.png": {
+    "Rows": 2,
+    "Cols": 1,
+    "Subjects": [
+      "glute-bridge",
+      "kettlebell-swing"
+    ]
+  },
+  "sheet-lateral-raise.png": {
+    "Rows": 2,
+    "Cols": 1,
+    "Subjects": [
+      "lateral-raise",
+      "tricep-extension"
+    ]
+  },
+  "sheet-calf-raise.png": {
+    "Rows": 2,
+    "Cols": 1,
+    "Subjects": [
+      "calf-raise",
+      "leg-raise"
+    ]
+  }
+}

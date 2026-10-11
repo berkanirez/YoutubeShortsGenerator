@@ -5,6 +5,9 @@ export type ScenePalette = {
   background: string;
   // A shade darker than the background: the static diagonal stripe and flat shapes.
   stripe: string;
+  // The gym floor the characters stand on, and its front edge.
+  floor: string;
+  floorEdge: string;
   // Strong team color: wall lettering, numbers, signs.
   accent: string;
 };
@@ -12,7 +15,7 @@ export type ScenePalette = {
 // One dark gym-grey for every scene: the mascot's red, tan and the bright lettering pop on
 // it, and the screen reads as one place rather than a slideshow of colors. The scene types
 // still differ by their accent (wall lettering, signs, the wipe's edge).
-const GREY = { background: "#2F3033", stripe: "#383A3E" };
+const GREY = { background: "#2F3033", stripe: "#383A3E", floor: "#232427", floorEdge: "#4A4C52" };
 
 export const PALETTE_BY_SCENE_TYPE: Record<SceneType, ScenePalette> = {
   Hook: { ...GREY, accent: "#EF4444" },

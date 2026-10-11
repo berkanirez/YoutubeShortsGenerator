@@ -8,8 +8,11 @@ public sealed class JsonAssetRepository : IAssetRepository
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly IReadOnlyList<AssetMetadata> _assets;
-    private readonly IReadOnlyDictionary<string, AssetMetadata> _byId;
+    private readonly string _path;
+    private readonly object _gate = new();
+    private Snapshot _snapshot;
+
+    private sealed record Snapshot(DateTime Stamp, IReadOnlyList<AssetMetadata> Assets, IReadOnlyDictionary<string, AssetMetadata> ById);
 
     // Loads and validates the manifest once, at construction (this is registered as a
     // singleton) - a broken/missing manifest fails the app at startup with a clear error,
@@ -17,7 +20,13 @@ public sealed class JsonAssetRepository : IAssetRepository
     // of surfacing a confusing error on the first real scene-planning request.
     public JsonAssetRepository(IOptions<AssetManifestOptions> options)
     {
-        var path = options.Value.ManifestPath;
+        _path = options.Value.ManifestPath;
+        _snapshot = Load(_path);
+    }
+
+    private static Snapshot Load(string path)
+    {
+        var stamp = File.GetLastWriteTimeUtc(path);
         if (!File.Exists(path))
         {
             throw new InvalidOperationException(
@@ -60,13 +69,34 @@ public sealed class JsonAssetRepository : IAssetRepository
             }
         }
 
-        _assets = assets;
-        _byId = assets.ToDictionary(a => a.Id, StringComparer.OrdinalIgnoreCase);
+        return new Snapshot(stamp, assets, assets.ToDictionary(a => a.Id, StringComparer.OrdinalIgnoreCase));
+    }
+
+    // Art can now be added while the API runs (ArtImporter, the AssetTool), so the manifest is
+    // re-read when its file changes. A broken edit keeps the last good catalog; the editors
+    // validate and roll back, so that would be a hand edit gone wrong.
+    private Snapshot Current()
+    {
+        lock (_gate)
+        {
+            if (File.GetLastWriteTimeUtc(_path) != _snapshot.Stamp)
+            {
+                try
+                {
+                    _snapshot = Load(_path);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+
+            return _snapshot;
+        }
     }
 
     public Task<IReadOnlyList<AssetMetadata>> GetAllAsync(CancellationToken cancellationToken) =>
-        Task.FromResult(_assets);
+        Task.FromResult(Current().Assets);
 
     public Task<AssetMetadata?> GetByIdAsync(string id, CancellationToken cancellationToken) =>
-        Task.FromResult(_byId.GetValueOrDefault(id));
+        Task.FromResult(Current().ById.GetValueOrDefault(id));
 }

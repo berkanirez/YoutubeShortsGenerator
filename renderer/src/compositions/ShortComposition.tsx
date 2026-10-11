@@ -3,6 +3,7 @@ import { AbsoluteFill, Html5Audio, interpolate, staticFile, useCurrentFrame, use
 import { AUDIO_MIX, musicVolumeAt, resolveMusicPath } from "../audio/audioLibrary";
 import { resolveAssetSvgs, resolveOptionalAssetSvgs } from "../assets/assetManifest";
 import { poseCounterpart } from "../scenes/templates/staging";
+import { reactionPose } from "../scenes/templates/poses";
 import { planSeed } from "../scenes/templates/variant";
 import { resolveCaptionStyle } from "../captions/captionStyles";
 import { parseVideoPlan, PLAN_FPS, type VideoPlan } from "../schemas/videoPlan";
@@ -80,8 +81,12 @@ export const calculateMetadata: CalculateMetadataFunction<
   // ExerciseDemo template can animate a rep. Optional: a missing partner just
   // means a still image, never a failed render.
   const partnerIds = allAssetIds.map(poseCounterpart).filter((id): id is string => id !== null);
+  // And the pose the mascot reacts with mid-scene (poses.ts), when the catalog has it.
+  const reactionIds = plan.scenes
+    .map((scene) => reactionPose(scene.type, displayAssetId(scene)))
+    .filter((id): id is string => id !== null);
   const assetSvgById = {
-    ...(await resolveOptionalAssetSvgs(partnerIds)),
+    ...(await resolveOptionalAssetSvgs([...partnerIds, ...reactionIds])),
     ...(await resolveAssetSvgs(allAssetIds)),
   };
 
@@ -121,7 +126,7 @@ export const ShortComposition: React.FC<ShortCompositionProps> = ({
           scenes={plan.scenes}
           assetSvgById={assetSvgById}
           captionStyle={resolveCaptionStyle(plan.captionStyle)}
-          variantSeed={planSeed(plan.title, plan.narrationText)}
+          variantSeed={plan.variant ?? planSeed(plan.title, plan.narrationText)}
         />
       </AbsoluteFill>
       {dark > 0 ? <AbsoluteFill style={{ backgroundColor: "#000000", opacity: dark }} /> : null}

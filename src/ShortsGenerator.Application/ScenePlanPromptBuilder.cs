@@ -69,8 +69,9 @@ public static class ScenePlanPromptBuilder
         sb.AppendLine("Rules:");
         sb.AppendLine($"- \"scenes\" must contain exactly {count} entries, numbered 1 to {count}.");
         sb.AppendLine($"- Scene 1 is type \"Hook\" and scene {count} is type \"Outro\". Every other scene uses one of: {middleSceneTypes}.");
-        sb.AppendLine("- \"onScreenText\": a slogan of 1-3 words painted on the gym wall behind the visual (\"Full range\",");
-        sb.AppendLine("  \"Slow down\"). Not a sentence - the captions already show every spoken word.");
+        // No example slogans: llama3.2:3b copied "Full range" into the Hook of 5 videos out of 5.
+        sb.AppendLine("- \"onScreenText\": a slogan of 1-3 words painted on the gym wall behind the visual, taken from");
+        sb.AppendLine("  THAT scene's own narration. Not a sentence - the captions already show every spoken word.");
         sb.AppendLine("- \"emphasis\": 1-3 words copied exactly from THAT scene's narration (the key idea), or null.");
         sb.AppendLine("- Each type has its own on-screen template; pick the type whose template fits what the scene says");
         sb.AppendLine("  (this list is in no particular order - do not just follow it):");

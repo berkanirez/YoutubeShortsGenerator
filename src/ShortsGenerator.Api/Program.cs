@@ -4,6 +4,7 @@ using ShortsGenerator.Api.Endpoints;
 using ShortsGenerator.Application;
 using ShortsGenerator.Domain;
 using ShortsGenerator.Infrastructure;
+using ShortsGenerator.Infrastructure.Art;
 using ShortsGenerator.Infrastructure.Assets;
 using ShortsGenerator.Infrastructure.Jobs;
 using ShortsGenerator.Infrastructure.Llm;
@@ -20,12 +21,14 @@ builder.Services.AddVideoPlanStorage(builder.Configuration);
 builder.Services.AddAssetRepository(builder.Configuration);
 builder.Services.AddKokoroTtsProvider(builder.Configuration);
 builder.Services.AddRemotionRenderer(builder.Configuration);
+builder.Services.AddArtImport(builder.Configuration);
 builder.Services.AddScoped<VideoJobService>();
 builder.Services.AddScoped<ScriptGenerationService>();
 builder.Services.AddScoped<ScenePlanningService>();
 builder.Services.AddScoped<NarrationService>();
 builder.Services.AddScoped<RenderService>();
 builder.Services.AddScoped<PlanEditService>();
+builder.Services.AddScoped<ArtRequestService>();
 builder.Services.AddVideoJobQueue();
 
 var app = builder.Build();
@@ -46,12 +49,14 @@ using (var scope = app.Services.CreateScope())
     // here fails the app at startup with a clear error if the manifest is missing/broken,
     // instead of surfacing a confusing error on the first real scene-planning request.
     scope.ServiceProvider.GetRequiredService<IAssetRepository>();
+    scope.ServiceProvider.GetRequiredService<IArtSubjectCatalog>();
 }
 
 app.UseJsonErrors();
 app.UseHttpsRedirection();
 app.UseDashboard();
 app.MapDashboardEndpoints();
+app.MapArtEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new HealthResponse("ok", DateTimeOffset.UtcNow)))
     .WithName("GetHealth");

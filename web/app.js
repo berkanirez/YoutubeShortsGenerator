@@ -95,6 +95,9 @@ function statusLabel(job) {
   if (job.status === "Completed" && job.isReviewed && !job.isRunning) {
     return "Reviewed";
   }
+  if (job.status === "WaitingForArt") {
+    return "NeedsArt";
+  }
   if (terminal || job.isRunning) {
     return job.status;
   }
@@ -195,6 +198,80 @@ async function renderReviewChecks(job, detail) {
   show(state);
 }
 
+// ---- pictures needed (WaitingForArt) -----------------------------------------------------
+
+// One row per missing picture: the ready prompt (copy), a file picker that uploads straight
+// away, and a tick once the file is in. Continue imports them and resumes the job.
+async function renderArtRequests(job, detail) {
+  const box = $('[data-field="art-box"]', detail);
+  const message = $('[data-field="art-message"]', detail);
+  box.hidden = false;
+  $('[data-field="art-reference"]', detail).href = "/api/assets/mascot-idle/svg";
+  const requests = await api(`/api/videos/${job.id}/art`);
+  $('[data-field="art-list"]', detail).replaceChildren(
+    ...requests.map((request, index) => {
+      const item = document.createElement("div");
+      item.className = "art-item";
+      const head = document.createElement("div");
+      head.className = "art-head";
+      const name = document.createElement("strong");
+      name.textContent = `${index + 1}. ${request.fileName}`;
+      const scenes = document.createElement("span");
+      scenes.className = "muted";
+      scenes.textContent = `scene ${request.sceneIds.join(", ")}${request.needsReferenceImage ? " - attach the reference mascot" : ""}`;
+      const state = document.createElement("span");
+      state.className = request.supplied ? "ok" : "muted";
+      state.textContent = request.supplied ? "uploaded" : "missing";
+      const copy = document.createElement("button");
+      copy.type = "button";
+      copy.className = "secondary";
+      copy.textContent = "Copy prompt";
+      copy.onclick = async () => {
+        await navigator.clipboard.writeText(request.prompt);
+        copy.textContent = "Copied";
+      };
+      const file = document.createElement("input");
+      file.type = "file";
+      file.accept = "image/png,image/jpeg,image/webp";
+      file.onchange = async () => {
+        if (!file.files.length) return;
+        state.textContent = "uploading...";
+        try {
+          await api(`/api/videos/${job.id}/art/${encodeURIComponent(request.fileName)}`, { method: "PUT", body: file.files[0] });
+          state.className = "ok";
+          state.textContent = "uploaded";
+        } catch (error) {
+          state.className = "muted";
+          state.textContent = error.message;
+        }
+      };
+      head.append(name, scenes, state, copy, file);
+      const prompt = document.createElement("pre");
+      prompt.textContent = request.prompt;
+      item.append(head, prompt);
+      return item;
+    }),
+  );
+  const proceed = async (skipMissing, button) => {
+    button.disabled = true;
+    message.textContent = "Importing pictures (HD upscale, background removal)...";
+    try {
+      const result = await api(`/api/videos/${job.id}/art/continue?skipMissing=${skipMissing}`, { method: "POST" });
+      message.textContent = result.resumed
+        ? `Continuing${result.imported.length ? ` with ${result.imported.join(", ")}` : ""}.`
+        : `Still missing: ${result.missing.join(", ")}`;
+      lastDetailKey = "";
+      await refreshJobs();
+    } catch (error) {
+      message.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  };
+  $('[data-action="art-continue"]', detail).onclick = (event) => proceed(false, event.target);
+  $('[data-action="art-skip"]', detail).onclick = (event) => proceed(true, event.target);
+}
+
 // ---- detail --------------------------------------------------------------------------
 
 async function renderDetail(job) {
@@ -212,7 +289,8 @@ async function renderDetail(job) {
   field("status").textContent = statusLabel(job);
   field("status").className = `badge ${statusLabel(job)}`;
 
-  const current = STAGES.indexOf(job.status);
+  // Waiting for art happens between the plan and the voice-over.
+  const current = STAGES.indexOf(job.status === "WaitingForArt" ? "Planning" : job.status);
   field("stages").replaceChildren(
     ...STAGES.map((stage, index) => {
       const li = document.createElement("li");
@@ -249,7 +327,7 @@ async function renderDetail(job) {
   };
   const terminal = job.status === "Completed" || job.status === "Failed";
   $('[data-action="retry"]', view).hidden = job.status !== "Failed" || job.isQueued;
-  $('[data-action="continue"]', view).hidden = terminal || job.isQueued || job.isRunning;
+  $('[data-action="continue"]', view).hidden = terminal || job.isQueued || job.isRunning || job.status === "WaitingForArt";
   $('[data-action="render"]', view).hidden =
     !(job.status === "Completed" || (job.status === "Narrating" && !job.isRunning)) || job.isQueued;
   for (const [name, run] of Object.entries(actions)) {
@@ -278,6 +356,9 @@ async function renderDetail(job) {
   $('[data-field="review-box"]', detail).open = wasOpen.review;
 
   // Optional extras, filled in after the main view is on screen.
+  if (job.status === "WaitingForArt") {
+    await renderArtRequests(job, detail);
+  }
   try {
     const review = await api(`/api/videos/${job.id}/review`);
     const box = $('[data-field="review-box"]', detail);

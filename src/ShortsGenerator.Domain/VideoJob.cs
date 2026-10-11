@@ -59,6 +59,15 @@ public sealed class VideoJob
     public void MarkPlanning(DateTimeOffset now) =>
         TransitionTo(VideoJobStatus.Planning, now, VideoJobStatus.Created);
 
+    // The plan is done but needs art the catalog doesn't have; nothing runs until the owner
+    // supplies it (or chooses to go on without), see ResumeAfterArt.
+    public void MarkWaitingForArt(DateTimeOffset now) =>
+        TransitionTo(VideoJobStatus.WaitingForArt, now, VideoJobStatus.Planning);
+
+    // Back to "Planning with a finished plan", which the pipeline continues with narration.
+    public void ResumeAfterArt(DateTimeOffset now) =>
+        TransitionTo(VideoJobStatus.Planning, now, VideoJobStatus.WaitingForArt);
+
     // Attaching the script does NOT move the job to Narrating: per the pipeline in
     // CLAUDE.md (script -> scenes -> assets -> TTS -> render), both script generation
     // and scene planning happen while the job is still "Planning". Narrating is reserved
@@ -126,7 +135,8 @@ public sealed class VideoJob
             VideoJobStatus.Created,
             VideoJobStatus.Planning,
             VideoJobStatus.Narrating,
-            VideoJobStatus.Rendering);
+            VideoJobStatus.Rendering,
+            VideoJobStatus.WaitingForArt);
         ErrorMessage = errorMessage;
     }
 

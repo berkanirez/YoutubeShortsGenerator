@@ -34,7 +34,23 @@ re-run `npm run sync-assets` in `renderer/` if you use Remotion Studio.
 ## PNG art (the channel mascot)
 
 The mascot and any generated/painted art are PNGs (prompts: `docs/MASCOT_PROMPTS.md`).
-Drop the raw image into `assets/incoming/` (originals stay there), then:
+
+**Usually you don't do the steps below by hand.** A video that needs a picture the catalog
+lacks stops in *Pictures needed* (status `WaitingForArt`) with a ready prompt per picture;
+uploading the image and pressing Continue runs exactly these steps (`ArtImporter`). Which
+picture a scene needs comes from `assets/manifests/subjects.json`: each subject has the terms
+that name it in a narration, its kind (`Muscle`, `ExercisePair`, `Exercise`, `Equipment`,
+`Icon`) and the description that goes into the prompt. A new subject is one JSON entry; its
+asset ids follow the conventions above (`<id>-highlight`, `<id>-top`/`<id>-bottom`, `<id>`).
+
+**Building the library in bulk:** `dotnet run --project tools/ShortsGenerator.AssetTool -- prompts`
+writes `docs/ART_PROMPTS_MISSING.md` - every missing picture, grouped into sheets (4 characters
+in a row, 9 icons in a grid, 2 exercise pairs per image) so one prompt gives several pictures.
+Save each result under its `sheet-....png` name into `assets/incoming/` and run `... -- import`:
+sheets are cut apart (`tools/images/split_sheet.py`, mapping in `assets/incoming/sheets.json`)
+and every picture is imported.
+
+By hand: drop the raw image into `assets/incoming/` (originals stay there), then:
 
 ```
 tools/images/.venv/Scripts/python.exe tools/images/prepare_art.py assets/incoming/mascot-idle.png output/art-preview/mascot-idle.png

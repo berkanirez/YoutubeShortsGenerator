@@ -93,6 +93,7 @@ public sealed class ScriptGenerationService
     private async Task<string> GenerateValidatedNarrationAsync(string topic, CancellationToken cancellationToken)
     {
         var earlierScripts = await LoadEarlierScriptsAsync(cancellationToken);
+        var format = StoryFormats.Pick(topic, earlierScripts.Select(e => e.Script).ToList());
         IReadOnlyList<string> failureReasons = [];
         // A script that is fine except for a weak opening. The hook is a quality rule, not a
         // safety one: if the model never gets it right, the video is still made with this.
@@ -100,7 +101,7 @@ public sealed class ScriptGenerationService
 
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
-            var prompt = ScriptPromptBuilder.Build(topic, failureReasons);
+            var prompt = ScriptPromptBuilder.Build(topic, failureReasons, format);
             var raw = await _llmProvider.GenerateAsync(prompt, cancellationToken);
             var cleaned = ScriptTextCleaner.Clean(raw);
             var validation = ScriptValidator.Validate(cleaned);

@@ -17,4 +17,10 @@ public sealed record VideoPlan(
     IReadOnlyList<string>? ReviewWarnings = null,
     // Day 23: a scene's narration text was edited, so narration.wav and every scene's timing
     // no longer match the words. Rendering is refused until the narration is regenerated.
-    bool NarrationOutdated = false);
+    bool NarrationOutdated = false,
+    // The scenes were checked against the art catalog (ArtGapDetector) and every needed
+    // picture exists - or the owner chose to continue without the missing ones.
+    bool ArtChecked = false,
+    // Which look set the renderer uses (hook layout, transitions, motion style), picked by
+    // VisualDirector so consecutive videos don't look alike. Null = derived from the text.
+    int? Variant = null);

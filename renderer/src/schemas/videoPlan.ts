@@ -81,6 +81,8 @@ export const VideoPlanSchema = z
     style: z.string().nullable(),
     captionStyle: z.string().nullable(),
     musicMood: z.string().nullable(),
+    // The look set picked by the backend (VisualDirector); absent in older plans.
+    variant: z.number().int().min(0).nullish(),
   })
   .superRefine((plan, ctx) => {
     const seenIds = new Set<string>();
